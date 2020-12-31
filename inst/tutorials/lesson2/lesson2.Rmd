@@ -1,0 +1,321 @@
+---
+title: "HW3"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+
+```{r}
+library(learnr)
+library(gradethis)
+
+tutorial_options(exercise.checker = gradethis::grade_learnr)
+
+```
+
+```{r, eval = F}
+To help you answer the questions below, complete the following by Wed, Sep 9.
+
+Part 1. In-class worksheets
+# Day 1, Matrices: https://colab.research.google.com/drive/10Xvy5JAoYxrfnfuemn-i4Nr_epzmI4RG?usp=sharing
+# Day 2, Factors: 
+
+# When you complete these, you will turn them in by pasting the link right here. We may change how you deliver these in the future, but i think this will work for now. 
+# To share them, click Share > click from 'restricted' to 'anyone with link can view' > copy link
+# * MAKE SURE IT IS SET TO VIEWER AND NOT COMMENTER OR EDITOR!!! YOU DON'T WANT THE TA (OR ANYONE ELSE) ABLE TO ACCIDENTALLY DELETE OR CHANGE YOUR WORK.
+# Day 1 link:
+# Day 2 link:
+
+Part 2. Formal Homework
+# Complete this file, knit it, and upload the HTML-knitted version of this file to Learning Suite. 
+
+```
+
+### Installing, loading, and using packages
+
+These questions test if you can read it, manipulate, and work with matrices
+
+#### Q1
+```{r, include = F}
+# Read in the 'transcriptome1.csv' file as `txn`. Make sure to check that your headers are correct.
+```
+```{r Q1, exercise = T}
+txn <- read.csv('~/quizzes/HW3/transcriptome.csv', header=F)
+str(txn)
+```
+
+
+#### Q2
+```{r, include = F, eval=F}
+# By default, `txn` is read in as a data frame. You can check that by printing its structure:
+str(txn)
+# A data frame is a useful format, but this assignment is about matrices, so let's convert it to a matrix. First, store columns 2 through 4 in the variable `txn2`.
+```
+```{r Q2, exercise = T}
+txn2 <- txn[,2:4]
+```
+
+#### Q3
+```{r, include = F, eval=F}
+# `txn2` is still a data frame
+str(txn2)
+
+# We can convert `txn2` to a matrix and store it the variable `txn3` using this code:
+txn3 <- as.matrix(txn2, ncol = 3, byrow = F)
+
+# Test if txn3 is a matrix using `is.matrix()`. 
+is.matrix(txn3)
+# For the Q, print the first few rows of the matrix to examine it structure (# of rows and columns, etc). You can consult the `Base R` cheatsheet to help.
+```
+```{r Q3, exercise = T}
+head(txn3)
+```
+
+#### Q4 
+```{r, include = F}
+# Why did we remove the first column of `txn` before converting the remaining data to a matrix? THink about your answer in terms of coercion and data classes.
+```
+```{r Q4, exercise = T}
+print("otherwise everything in the matrix would have been a numeric.")
+```
+
+#### Q5 
+```{r, include = F}
+# The matrix is taking shape now - but the rows and columns need names. Using the information available in `txn1`, add row names to `txn3`.
+```
+```{r Q5, exercise = T}
+rownames(txn3) <- txn[,1]
+```
+
+#### Q6
+```{r, include = F}
+# Add the following column names to `txn3`, in order: WT_rep1, WT_rep2, WT_rep3. These column names indicate that the first three columns contain FPKM data (transcriptional readout from an RNAseq experiment) for flies reared with a wild-type strain of E. coli. 
+```
+```{r Q6, exercise = T}
+colnames(txn3) <- c("WT_rep1", "WT_rep2", "WT_rep3")
+```
+
+#### Q7
+```{r, include = F}
+# Print the first 6 rows of `txn3` to show you created the file correctly 
+```
+```{r Q7, exercise = T}
+head(txn3)
+```
+
+#### Q8
+```{r, include = F}
+# Now read in `transcriptome2.csv` as `t2` and convert it to the same format as txn3 (a matrix with rownames and column names) and named `t23`. For column names, use mut_rep1, mut_rep2, mut_rep3. These column names indicate that the first three columns contain FPKM data for three replicates of flies reared with a strain of E. coli bearing a mutation in the pdxK gene.
+
+# In your knitted file you should only print the first six lines of the file once - at the very end when they are properly formatted. However, I encourage you to pay close attention to the output of your file at each step. For example, you may (*ahem*) want to print it after reading it in to examine how it looks before you start modifying column and header names. Or, you may (*ahem*) also want to check it's size and compare with txn3, using a function such as `dim()`. I recommend checking the format after each step; but remember to pound out these lines before knitting; otherwise you will lose points even if you did it correctly.
+```
+```{r Q8, exercise = T}
+t2 <- read.csv('transcriptome2.csv', header=F)
+head(t2)
+t22 <- t2[,2:4]
+t23 <- as.matrix(t22, ncol = 3, byrow = F)
+rownames(t23) <- t2[,1]
+colnames(t23) <- c("mut_rep1", "mut_rep2", "mut_rep3")
+head(t23)
+```
+
+#### Q9
+```{r, include = F}
+# add the columns of `t23` to `txn3` as its fourth through sixth columns. Name the new matrix `all_txn` and print it's first six lines.
+```
+```{r Q9, exercise = T}
+all_txn <- cbind(txn3,t23)
+head(all_txn)
+
+```
+
+#### Q10
+```{r, include = F}
+# This is a multi-step problem. Add a new row of data to the matrix: the WTrep1-3 and mut_rep1-3 values should be, in order: 1000, 1001, 1002, 500, 501, 502. The name of the row should be "fakegene". Name the new matrix `extra_txn`.
+
+# I want you to do this problem a specific way - other solutions will not receive credit. You should create the new row as a matrix with the appropriate column and row names, and then join this new matrix to the previous. Print the new matrix first, then print the last six rows of the `extra_txn` matrix using the `tail()` command.
+
+# You may need to consult code I have given you to figure out how to create a matrix from scratch. Be sure to specify all necessary arguments to the 'matrix()' command.
+```
+```{r Q10, exercise = T}
+fake_row <- matrix(c(1000,1001,1002,500,501,502), nrow=1)
+colnames(fake_row) <- c("WT_rep1","WT_rep2","WT_rep3","mut_rep1","mut_rep2","mut_rep3")
+rownames(fake_row) <- "fakegene"
+extra_txn <- rbind(all_txn, fake_row)
+tail(extra_txn)
+```
+
+#### Q11
+```{r, include = F}
+# Add a column to `extra_txn` that contains the mean expression of the flies reared with wild-type bacteria (the WT columns). Name the new column `WT_means` and then print the first six lines of the file to show you did it correctly. This may take multiple steps.
+
+# You can store a modification to a matrix inside the same variable name that you call it with. For example:
+a<-1
+a
+a <- a +1
+a
+# when you print `a` it will be 2.
+
+# WARNING: but be careful of running the command twice or you might add the new column multiple times!
+
+# As above, print the `extra_txn` matrix only one time, at the end. If you print it multiple times you may lose points!
+```
+```{r Q11, exercise = T}
+extra_txn <- cbind(extra_txn,rowMeans(extra_txn[,1:3]))
+colnames(extra_txn)[7] <- "WT_means"
+head(extra_txn)
+```
+
+#### Q12
+```{r, include = F}
+# Now add a `mutant_means` column, following the instructions above
+```
+```{r Q12, exercise = T}
+extra_txn <- cbind(extra_txn,rowMeans(extra_txn[,4:6]))
+colnames(extra_txn)[8] <- "mutant_means"
+head(extra_txn)
+```
+
+#### Q13
+```{r, include = F}
+# Finally, to show you did all the steps above correctly, calculate the mean of WT_means and the mean of mutant_means. Print each below.
+```
+```{r Q13, exercise = T}
+mean(extra_txn[,7])
+mean(extra_txn[,8])
+```
+
+## Matrix selection
+Select subsets from the 'extra_txn' matrix (above) in each of these questions.
+
+#### Q14
+```{r, include = F}
+# Print the FPKM value for the Acer gene in the second replicate of flies reared with wild-type bacteria
+```
+```{r Q14, exercise = T}
+extra_txn["Acer","WT_rep2"]
+```
+
+#### Q15
+```{r, include = F}
+# Print as a single matrix the FPKM values of all genes that start with `14` for the first and second replicates of flies reared with mutant bacteria. 
+
+#You should have 3 rows and 2 columns, plus row and column names.
+```
+```{r Q15, exercise = T}
+extra_txn[c("14-3-3epsilon","14-3-3zeta","140up"),c("mut_rep1","mut_rep2")]
+```
+
+#### Q16
+```{r, include = F}
+# Report the mean gene expression (all replicates) of WT genes that start with `14`. Print a single value as your answer.
+```
+```{r Q16, exercise = T}
+str(extra_txn)
+mean(extra_txn[c("14-3-3epsilon","14-3-3zeta","140up"),1:3])
+```
+
+#### Q17
+```{r, include = F}
+# Print as a single matrix the FPKM values of all genes that start with `5-HT` for the first replicates of flies reared with wild-type bacteria and the first replicate of flies reared with mutant bacteria.
+
+# You should have 5 rows and 2 columns, plus row and column names.
+
+```
+```{r Q17, exercise = T}
+rownames(extra_txn)
+extra_txn[c(9:13),c("WT_rep1","mut_rep1")]
+```
+
+#### Q18
+```{r, include = F}
+#Print as a single matrix the mean gene expression for every amino-acyl transferase gene (these begin with `Aats`). Your matrix should have rownames, column names, 22 rows, and 2 columns. Each row should be for an aats gene, and the columns should be the mean of the WT columns and the mean of the mutant columns.
+```
+```{r Q18, exercise = T}
+rownames(extra_txn)
+extra_txn[24:45,7:8]
+```
+
+#### Q19
+```{r, include = F}
+# Working with the extra_txn matrix, round all the values to have significant digits of 10 - that is, 722.92400 would be rounded to 720, 8.12856 would be rounded to 10, and 0.76185 would be rounded to 0. This could also be called 'rounding to the first power of ten'. Store the new values in `extra_txn2` and then print its first 6 rows. Use the round() function
+```
+```{r Q19, exercise = T}
+extra_txn2 <- round(extra_txn,-1)
+head(extra_txn2)
+```
+
+#### Q20
+```{r, include = F}
+# Use hclust and follow the model in HW3A to create a dendrogram showing which gene is expressed most similarly to the 14-3-3epsilon gene. Show the dendrogram and print the name of the gene.
+
+# You may need ot zoom in on the plot by clicking 'Zoom' above the plot in the pane window. If you haven't made it so plots will print to the pane at right, go back to the instructions for HW1 on the content tab and follow them. You need to adjust some of the R markdown settings so plots will come up in the 'Plots' pane at right. They don't do it by default.
+```
+```{r Q20, exercise = T}
+plot(hclust(dist((all_txn))))
+print("14-3-3zeta")
+```
+
+#### Q21
+```{r, include = F}
+# Now, identify if the WT and mut samples cluster separately from each other. You'll need to transpose the data frame - make the rows columns and the columns rows - using the t() command. 
+# Print if the WT samples cluster by themselves or with the mut samples.
+```
+```{r Q21, exercise = T}
+plot(hclust(dist(t(all_txn))))
+print("WT and mut cluster separately")
+```
+
+#### Q22
+```{r, include = F}
+# Using the extra_txn2 matrix, report me the mean gene expression of the wt_rep2 column for all unique values of the wt_rep1 column. This is a pretty contrived request, but gives you experience using the 'aggregate()' function. Essentially, you're taking the mean value of all wt_rep2 values for all the distinct values of wt_rep1. Don't store the new values anywhere - just print the results of the aggregate function.
+
+# Also, print if it looks like the mean WT_rep2 values are fairly similar to or fairly different from the rounded WT_rep1 values
+```
+```{r Q22, exercise = T}
+aggregate(WT_rep2 ~ WT_rep1, extra_txn2, FUN = mean)
+```
+
+## Factors
+#### Q23
+```{r}
+# Read in the following vector. 
+mouse_genotypes <- c("129(B6)-Gpx1tm1Ysh Gpx2tm2Coh(N5-N10)","129(B6)-Serpine1tm1Mlg Apoetm1Bres/CljH[cc]","129(Cg)-Numbtm1Zili/Numbtm1.1Zili Numbltm1Zili/Numbltm1.1Zili/SiecRbrc")
+str(mouse_genotypes)
+
+# Convert the vector to a factor vector, `mg2`
+```
+```{r Q23, exercise = T}
+mg2 <- factor(mouse_genotypes)
+levels(mg2)
+```
+
+#### Q24
+```{r}
+# Reorder the levels of mg2 to be in order of: 129(Cg)-Numbtm1Zili/Numbtm1.1Zili Numbltm1Zili/Numbltm1.1Zili/SiecRbrc, 129(B6)-Gpx1tm1Ysh Gpx2tm2Coh(N5-N10), 129(B6)-Serpine1tm1Mlg Apoetm1Bres/CljH[cc]
+
+# Print the levels of `mg2` before and after reordering to show that they were successfully reordered.
+```
+```{r Q24, exercise = T}
+levels(mg2)
+mg2 <- factor(mg2, levels = c("129(Cg)-Numbtm1Zili/Numbtm1.1Zili Numbltm1Zili/Numbltm1.1Zili/SiecRbrc", "129(B6)-Gpx1tm1Ysh Gpx2tm2Coh(N5-N10)", "129(B6)-Serpine1tm1Mlg Apoetm1Bres/CljH[cc]"))
+levels(mg2)
+```
+
+#### Q25
+```{r}
+# Rename the levels of mg2 so that the following factors have the following values. Keep the ordering the same as in the previous question.
+
+# 129(B6)-Gpx1tm1Ysh Gpx2tm2Coh(N5-N10) -> "mutA"
+# 129(Cg)-Numbtm1Zili/Numbtm1.1Zili Numbltm1Zili/Numbltm1.1Zili/SiecRbrc -> "mutB"
+# 129(B6)-Serpine1tm1Mlg Apoetm1Bres/CljH[cc] -> "mutC"
+
+# Print mg2 before and after to show you did it correctly. When you are done, it should print as:
+# [1] mutA mutC mutB
+# Levels: mutB mutA mutC
+```
+```{r Q25, exercise = T}
+mg2
+mg2 <- factor(mg2, labels = c("mutB", "mutA", "mutC"))
+mg2
+```
