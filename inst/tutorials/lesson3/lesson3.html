@@ -1,0 +1,2404 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+<meta name="progressive" content="false" />
+<meta name="allow-skip" content="false" />
+
+<title>Drosophila fitness</title>
+
+
+<!-- highlightjs -->
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+<!-- taken from https://github.com/rstudio/rmarkdown/blob/67b7f5fc779e4cfdfd0f021d3d7745b6b6e17149/inst/rmd/h/default.html#L296-L362 -->
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("section-TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+<!-- end tabsets -->
+
+
+
+</head>
+
+<body>
+
+
+
+<div class="pageContent band">
+<div class="bandContent page">
+
+<div class="topics">
+
+<div id="section-start" class="section level2">
+<h2>start</h2>
+</div>
+<div id="section-figure-1" class="section level2">
+<h2>Figure 1</h2>
+<div id="section-figure-1a" class="section level3">
+<h3>Figure 1A</h3>
+<div class="tutorial-exercise" data-label="Figure_1A" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>  ## take the proper subset of data
+atrc &lt;- fecundity %&gt;% 
+  filter(vial%in%c(&quot;35u&quot;,&quot;30p&quot;,&quot;4d&quot;,&quot;11c&quot;,&quot;28n&quot;,&quot;2b&quot;,&quot;71k&quot;,&quot;1a&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;70j&quot;,&quot;15h&quot;,&quot;16i&quot;,&quot;13g&quot;,&quot;Gno&quot;,&quot;Ax&quot;)) %&gt;% 
+  filter(!is.na(fecundity)) %&gt;% 
+  filter(fecundity!=&quot;NaN&quot;) %&gt;% 
+  droplevels()
+
+  ## adjust levels to maintain plot order
+atrc$vial &lt;- factor(atrc$vial, levels = c(&quot;35u&quot;,&quot;30p&quot;,&quot;4d&quot;,&quot;11c&quot;,&quot;28n&quot;,&quot;1a&quot;,&quot;71k&quot;,&quot;2b&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;70j&quot;,&quot;15h&quot;,&quot;16i&quot;,&quot;13g&quot;,&quot;Gno&quot;,&quot;Ax&quot;))
+
+  ## build vectors for plot shading
+plot_colors &lt;- c(&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;green&quot;,&quot;green&quot;,&quot;purple&quot;,&quot;magenta&quot;,&quot;black&quot;)
+plot_lines &lt;- c(&quot;solid&quot;,&quot;longdash&quot;,&quot;dotted&quot;,&quot;dotdash&quot;,&quot;dashed&quot;,&quot;solid&quot;,&quot;longdash&quot;,&quot;dotted&quot;,&quot;dotdash&quot;,&quot;dashed&quot;,&quot;twodash&quot;,&quot;solid&quot;,&quot;longdash&quot;,&quot;solid&quot;,&quot;solid&quot;,&quot;solid&quot;)
+
+  ## make the plot
+ggplot(atrc, aes(x = date3, y=fecundity, group = vial, col = vial, fill = vial, linetype = vial)) + 
+    geom_smooth(aes(y = fecundity, linetype = vial), alpha = 0.05, size = .5) +
+    scale_color_manual(values = plot_colors, name = NULL, labels = c(expression(italic(A.~aceti)),expression(italic(A.~pasteurianus)),expression(italic(A.~pomorum)~DmCS),expression(italic(A.~tropicalis)~DmCS),expression(italic(A.~tropicalis)~NBRC),expression(italic(L.~brevis)~DmCS),expression(italic(L.~brevis)~gravesensis),expression(italic(L.~plantarum)~DmCS),expression(italic(L.~plantarum)~WCFS1),expression(italic(L.~fructivorans)~DmCS),expression(italic(L.~fructivorans)~KCTC),expression(italic(E.~coli)),expression(italic(P.~putida)),expression(italic(B.~subtilis)),&#39;5-species&#39;,&#39;Axenic&#39;)) + 
+   scale_fill_manual(values = plot_colors, name = NULL,labels = c(expression(italic(A.~aceti)),expression(italic(A.~pasteurianus)),expression(italic(A.~pomorum)~DmCS),expression(italic(A.~tropicalis)~DmCS),expression(italic(A.~tropicalis)~NBRC),expression(italic(L.~brevis)~DmCS),expression(italic(L.~brevis)~gravesensis),expression(italic(L.~plantarum)~DmCS),expression(italic(L.~plantarum)~WCFS1),expression(italic(L.~fructivorans)~DmCS),expression(italic(L.~fructivorans)~KCTC),expression(italic(E.~coli)),expression(italic(P.~putida)),expression(italic(B.~subtilis)),&#39;5-species&#39;,&#39;Axenic&#39;)) + 
+    scale_linetype_manual(values = plot_lines,name = NULL,labels = c(expression(italic(A.~aceti)),expression(italic(A.~pasteurianus)),expression(italic(A.~pomorum)~DmCS),expression(italic(A.~tropicalis)~DmCS),expression(italic(A.~tropicalis)~NBRC),expression(italic(L.~brevis)~DmCS),expression(italic(L.~brevis)~gravesensis),expression(italic(L.~plantarum)~DmCS),expression(italic(L.~plantarum)~WCFS1),expression(italic(L.~fructivorans)~DmCS),expression(italic(L.~fructivorans)~KCTC),expression(italic(E.~coli)),expression(italic(P.~putida)),expression(italic(B.~subtilis)),&#39;5-species&#39;,&#39;Axenic&#39;)) + 
+    ylab(&quot;female fecundity per day&quot;) +
+    xlab(&quot;time (d)&quot;) +
+    guides(fill = guide_legend(ncol = 3, byrow=T), color = guide_legend(ncol = 3, byrow=T), linetype = guide_legend(ncol = 3, byrow=T)) +
+    theme_cowplot() + 
+    theme(legend.position = &quot;none&quot;, legend.text.align = 0,legend.key.width = unit(.5,&quot;in&quot;), legend.text = element_text(size = 18), axis.text = element_text(size = 10),axis.title = element_text(size = 12),legend.justification = &quot;center&quot;)</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-figure-1b" class="section level3">
+<h3>Figure 1B</h3>
+<div class="tutorial-exercise" data-label="Figure_1B" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>total_fitness1 &lt;- fitness %&gt;% 
+  filter(!trt%in%c(&quot;Gno-17&quot;,&quot;1a-14&quot;,&quot;16i-16&quot;,&quot;16i-19&quot;,&quot;16i-12&quot;,&quot;16i-18&quot;,&quot;35u-18&quot;) &amp; !date3 %in% c(35,36)) %&gt;%
+  group_by(trt,vial) %&gt;%
+  summarize(mean_fec = sum(fecundity)) %&gt;% 
+  filter(vial %in% p$vec$vec_bac)
+
+
+total_fitness1$vial &lt;- factor(total_fitness1$vial, levels = c(&quot;35u&quot;,&quot;30p&quot;,&quot;4d&quot;,&quot;11c&quot;,&quot;28n&quot;,&quot;1a&quot;,&quot;71k&quot;,&quot;2b&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;70j&quot;,&quot;15h&quot;,&quot;16i&quot;,&quot;13g&quot;,&quot;Gno&quot;,&quot;Ax&quot;))
+total_fitness1$vial &lt;- plyr::revalue(total_fitness1$vial, c(&quot;35u&quot; = &quot;aace&quot;,&quot;30p&quot; = &quot;apan&quot;,&quot;4d&quot; = &quot;apoc&quot;,&quot;11c&quot;=&quot;atrc&quot;, &quot;28n&quot;=&quot;atrn&quot;,&quot;1a&quot; = &quot;lbrc&quot;,&quot;71k&quot; = &quot;lbga&quot;,&quot;2b&quot; = &quot;lplc&quot;, &quot;75o&quot; = &quot;lplw&quot;,&quot;3c&quot; = &quot;lfrc&quot;,&quot;70j&quot; = &quot;lfrk&quot;,&quot;15h&quot; = &quot;ecok&quot;, &quot;16i&quot; = &quot;pput&quot;,&quot;13g&quot; = &quot;bsub&quot;,&quot;Ax&quot; = &quot;ax&quot;,&quot;Gno&quot; = &quot;gno&quot;))
+
+
+print(&quot;N per treatment&quot;)
+data.frame(table(total_fitness1$vial)) %&gt;%
+  full_join(lookup_code, by = c(&quot;Var1&quot; = &quot;code1&quot;)) %&gt;%
+  dplyr::select(fullname,Freq)
+
+print(&quot;KW test&quot;)
+def &lt;- kruskal.test(mean_fec ~ vial, total_fitness1)
+efg &lt;- dunn.test(total_fitness1$mean_fec,total_fitness1$vial, method = &quot;bh&quot;, table = F)
+ghi &lt;- cldList(comparison = efg$comparisons, p.value = efg$P.adjusted, threshold = 0.05) %&gt;% arrange(factor(Group, levels = c(&quot;aace&quot;, &quot;apan&quot;, &quot;apoc&quot;,&quot;atrc&quot;, &quot;atrn&quot;, &quot;lbrc&quot;, &quot;lbga&quot;, &quot;lplc&quot;,  &quot;lplw&quot;, &quot;lfrc&quot;, &quot;lfrk&quot;, &quot;ecok&quot;,  &quot;pput&quot;, &quot;bsub&quot;,&quot;Ax&quot;,&quot;5sp&quot;)))
+print(&quot;BH-corrected multiple comparisons&quot;)
+ghi %&gt;% inner_join(lookup_code, by = c(&quot;Group&quot; = &quot;code1&quot;)) %&gt;% select(fullname, Group, Letter)
+
+total_fitness2 &lt;- fitness %&gt;% 
+  filter(!trt%in%c(&quot;Gno-17&quot;,&quot;1a-14&quot;,&quot;16i-16&quot;,&quot;16i-19&quot;,&quot;16i-12&quot;,&quot;16i-18&quot;,&quot;35u-18&quot;) &amp; !date3 %in% c(35,36)) %&gt;%
+  group_by(trt,vial) %&gt;%
+  summarize(mean_fec = sum(fecundity)) %&gt;% 
+  ungroup() %&gt;%
+  group_by(vial) %&gt;%
+  summarize(mean_fec2 = mean(mean_fec), sem_fec2 = sd(mean_fec)/sqrt(sum(mean_fec&gt;-30))) %&gt;% 
+  ungroup() %&gt;% 
+  filter(vial %in% p$vec$vec_bac) %&gt;%
+  mutate(vial = as.factor(as.character(vial))) %&gt;% 
+  arrange(factor(vial, levels=c(&quot;35u&quot;,&quot;30p&quot;,&quot;4d&quot;,&quot;11c&quot;,&quot;28n&quot;,&quot;1a&quot;,&quot;71k&quot;,&quot;2b&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;70j&quot;,&quot;15h&quot;,&quot;16i&quot;,&quot;13g&quot;,&quot;Gno&quot;,&quot;Ax&quot;)))
+
+total_fitness2$vial &lt;- factor(total_fitness2$vial, levels = c(&quot;35u&quot;,&quot;30p&quot;,&quot;4d&quot;,&quot;11c&quot;,&quot;28n&quot;,&quot;1a&quot;,&quot;71k&quot;,&quot;2b&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;70j&quot;,&quot;15h&quot;,&quot;16i&quot;,&quot;13g&quot;,&quot;Gno&quot;,&quot;Ax&quot;))
+total_fitness2$vial &lt;- plyr::revalue(total_fitness2$vial, c(&quot;35u&quot; = &quot;aace&quot;,&quot;30p&quot; = &quot;apan&quot;,&quot;4d&quot; = &quot;apoc&quot;,&quot;11c&quot;=&quot;atrc&quot;, &quot;28n&quot;=&quot;atrn&quot;,&quot;1a&quot; = &quot;lbrc&quot;,&quot;71k&quot; = &quot;lbga&quot;,&quot;2b&quot; = &quot;lplc&quot;, &quot;75o&quot; = &quot;lplw&quot;,&quot;3c&quot; = &quot;lfrc&quot;,&quot;70j&quot; = &quot;lfrk&quot;,&quot;15h&quot; = &quot;ecok&quot;, &quot;16i&quot; = &quot;pput&quot;,&quot;13g&quot; = &quot;bsub&quot;,&quot;Ax&quot; = &quot;Ax&quot;,&quot;Gno&quot; = &quot;5sp&quot;))
+plot_colors &lt;- c(&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;green&quot;,&quot;green&quot;,&quot;purple&quot;,&quot;magenta&quot;,&quot;black&quot;)
+plot_lines &lt;- c(&quot;solid&quot;,&quot;longdash&quot;,&quot;dotted&quot;,&quot;dotdash&quot;,&quot;dashed&quot;,&quot;solid&quot;,&quot;longdash&quot;,&quot;dotted&quot;,&quot;dotdash&quot;,&quot;dashed&quot;,&quot;twodash&quot;,&quot;solid&quot;,&quot;longdash&quot;,&quot;solid&quot;,&quot;solid&quot;,&quot;solid&quot;)
+
+ggplot(total_fitness2, aes(x = vial, y=mean_fec2, ymax = mean_fec2+sem_fec2, ymin = mean_fec2-sem_fec2, line = vial, linetype = vial)) + 
+        geom_col(size=2.5, col=plot_colors, fill = &quot;white&quot;, linetype = plot_lines) + 
+  geom_errorbar(width = 0.5, linetype = &quot;solid&quot;) + 
+    theme_cowplot() +
+      annotate(geom=&quot;text&quot;, x=c(1:length(table(list(total_fitness2$vial)))), y= c(total_fitness2$mean_fec2 + total_fitness2$sem_fec2+3), label = ghi$Letter, color = plot_colors, size=6, parse=T, hjust = 0,fill=NA, label.size=0, angle=90) + 
+  ylab(&quot;lifetime fecundity per female&quot;) +
+  xlab(&quot;treatment&quot;) +
+  theme(text = element_text(size=12),
+        axis.text.x = element_text(angle = 90))</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-figure-1c" class="section level3">
+<h3>Figure 1C</h3>
+<div class="tutorial-exercise" data-label="Figure_1C" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>test_ls &lt;- lifespan_analysis %&gt;% 
+  filter(treatment %in% c(p$vec$vec_bac)) %&gt;%
+  mutate(exp = as.factor(as.character(start_day))) %&gt;%
+  mutate(treatment = as.factor(as.character(treatment))) %&gt;%
+  droplevels()
+
+print(&quot;N per treatment&quot;)
+data.frame(table(test_ls$treatment)) %&gt;%
+  inner_join(lookup_code, by = c(&quot;Var1&quot; = &quot;code2&quot;)) %&gt;%
+  dplyr::select(fullname,Freq)
+
+test_ls$treatment &lt;- factor(test_ls$treatment, levels = c(&quot;35u&quot;,&quot;30p&quot;,&quot;4d&quot;,&quot;11c&quot;,&quot;28n&quot;,&quot;1a&quot;,&quot;71k&quot;,&quot;2b&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;70j&quot;,&quot;15h&quot;,&quot;16i&quot;,&quot;13g&quot;,&quot;Gno&quot;,&quot;Ax&quot;))
+test_ls$treatment &lt;- plyr::revalue(test_ls$treatment, c(&quot;35u&quot; = &quot;aace&quot;,&quot;30p&quot; = &quot;apan&quot;,&quot;4d&quot; = &quot;apoc&quot;,&quot;11c&quot;=&quot;atrc&quot;, &quot;28n&quot;=&quot;atrn&quot;,&quot;1a&quot; = &quot;lbrc&quot;,&quot;71k&quot; = &quot;lbga&quot;,&quot;2b&quot; = &quot;lplc&quot;, &quot;75o&quot; = &quot;lplw&quot;,&quot;3c&quot; = &quot;lfrc&quot;,&quot;70j&quot; = &quot;lfrk&quot;,&quot;15h&quot; = &quot;ecok&quot;, &quot;16i&quot; = &quot;pput&quot;,&quot;13g&quot; = &quot;bsub&quot;,&quot;Ax&quot; = &quot;Ax&quot;,&quot;Gno&quot; = &quot;5sp&quot;))
+
+test_ls$S&lt;-Surv(test_ls$time,test_ls$event)
+
+  ## log rank test
+print(&quot;Log rank test results&quot;)
+survdiff(S ~ treatment, data = test_ls)
+
+  ## pairwise log rank test results
+print(&quot;BH-corrected pairwise Log rank test results&quot;)
+model_all &lt;- pairwise_survdiff(S ~ treatment, data = test_ls, p.adjust.method = &quot;BH&quot;)
+x &lt;- test_ls$treatment
+levs &lt;- levels(x)
+y &lt;- Surv(test_ls$time, test_ls$event)
+lvl_order &lt;- levels(x)[order(tapply(as.numeric(y)[1:length(x)], 
+                                        x, mean))]
+
+comps &lt;- as_tibble(model_all$p.value, rownames=&quot;row&quot;) %&gt;% 
+  pivot_longer(-row, names_to=&quot;col&quot;, values_to=&quot;p&quot;) %&gt;% 
+  na.omit()
+comps %&gt;% inner_join(lookup_code, by = c(&quot;row&quot; = &quot;code1&quot;)) %&gt;% inner_join(lookup_code, by = c(&quot;col&quot; = &quot;code1&quot;)) %&gt;% select(Comp1 = fullname.x, Comp2 = fullname.y, p)
+
+  ## clds
+print(&quot;Compact letter displays&quot;)
+mycomps &lt;- as.matrix(comps[,1:2])
+signif &lt;- comps$p &lt; .05
+
+clds &lt;- multcomp:::insert_absorb(signif, 
+                         decreasing=FALSE, 
+                         comps=mycomps, 
+                         lvl_order=lvl_order)
+
+print(clds)
+
+name_val &lt;- c(clds$Letters[names(clds$Letters) == c(&quot;aace&quot;)],
+              clds$Letters[names(clds$Letters) == c(&quot;apan&quot;)],
+              clds$Letters[names(clds$Letters) == c(&quot;apoc&quot;)],
+              clds$Letters[names(clds$Letters) == c(&quot;atrc&quot;)],
+              clds$Letters[names(clds$Letters) == c(&quot;atrn&quot;)],
+              clds$Letters[names(clds$Letters) == c(&quot;lbrc&quot;)],
+              clds$Letters[names(clds$Letters) == c(&quot;lbga&quot;)],
+              clds$Letters[names(clds$Letters) == c(&quot;lplc&quot;)],
+              clds$Letters[names(clds$Letters) == c(&quot;lplw&quot;)],
+              clds$Letters[names(clds$Letters) == c(&quot;lfrc&quot;)],
+              clds$Letters[names(clds$Letters) == c(&quot;lfrk&quot;)],
+              clds$Letters[names(clds$Letters) == c(&quot;ecok&quot;)],
+              clds$Letters[names(clds$Letters) == c(&quot;pput&quot;)],
+              clds$Letters[names(clds$Letters) == c(&quot;bsub&quot;)],
+              clds$Letters[names(clds$Letters) == c(&quot;5sp&quot;)],
+              clds$Letters[names(clds$Letters) == c(&quot;Ax&quot;)]
+)
+
+  ## coloring
+plot_colors &lt;- c(&quot;red&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;red&quot;,&quot;black&quot;,&quot;magenta&quot;)
+plot_lines &lt;- c(&quot;solid&quot;,&quot;solid&quot;,&quot;dashed&quot;,&quot;dotted&quot;,&quot;dashed&quot;,&quot;solid&quot;,&quot;solid&quot;)
+plot_colors &lt;- c(&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;green&quot;,&quot;green&quot;,&quot;purple&quot;,&quot;magenta&quot;,&quot;black&quot;)
+plot_lines &lt;- c(&quot;solid&quot;,&quot;longdash&quot;,&quot;dotted&quot;,&quot;dotdash&quot;,&quot;dashed&quot;,&quot;solid&quot;,&quot;longdash&quot;,&quot;dotted&quot;,&quot;dotdash&quot;,&quot;dashed&quot;,&quot;twodash&quot;,&quot;solid&quot;,&quot;longdash&quot;,&quot;solid&quot;,&quot;solid&quot;,&quot;solid&quot;)
+
+annot_val &lt;- test_ls %&gt;% group_by(treatment, event) %&gt;% summarize(total = dplyr::n()) %&gt;% reshape2::dcast(formula = treatment ~ event, value.var = &quot;total&quot;) %&gt;% mutate(percent = 1-(`1`/(`0`+`1`))) %&gt;% dplyr::select(percent) %&gt;% unlist() %&gt;% unname()
+annot_name &lt;- test_ls %&gt;% group_by(treatment, event) %&gt;% summarize(total = dplyr::n()) %&gt;% reshape2::dcast(formula = treatment ~ event, value.var = &quot;total&quot;) %&gt;% mutate(percent = 1-(`1`/(`0`+`1`))) %&gt;% dplyr::select(treatment) %&gt;% unlist() %&gt;% unname()
+
+  ## revalue so the CLDs match up with the ends of the bars
+annot_val[14] &lt;- .82 # bsub
+annot_val[2] &lt;- .51 # apan
+annot_val[15] &lt;- .47 # 5sp
+annot_val[7] &lt;- .37 #  lbga
+annot_val[8] &lt;- .706 # lplc
+annot_val[6] &lt;- .435 # lbrc
+annot_val[10] &lt;- .405 # lfrc
+annot_val[3] &lt;- .28 # atrc
+annot_val[13] &lt;- .06
+annot_val[13] &lt;- .06
+annot_val[11] &lt;- .66 ## lfrk
+annot_val[16] &lt;- .62
+
+plot(survfit(S ~ treatment, test_ls),     xlim = c(10,41),     col=plot_colors,     lty=plot_lines,     lwd=1.75,    xlab= &quot;time(d)&quot;,     ylab=&quot;fractional survival&quot;,     cex.lab=1,     cex.axis=1.1,      bty = &quot;n&quot;)
+for(i in 1:length(table(list(test_ls$treatment)))) {
+  legend(x = 36, y = annot_val[i], legend = name_val[i], text.col = plot_colors[i], bty = &quot;n&quot;, xjust = 0, yjust = .5, cex=1)#
+}
+
+  ## take the proper subset of data
+atrc &lt;- fecundity %&gt;% 
+  filter(vial%in%c(&quot;35u&quot;,&quot;30p&quot;,&quot;4d&quot;,&quot;11c&quot;,&quot;28n&quot;,&quot;2b&quot;,&quot;71k&quot;,&quot;1a&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;70j&quot;,&quot;15h&quot;,&quot;16i&quot;,&quot;13g&quot;,&quot;Gno&quot;,&quot;Ax&quot;)) %&gt;% 
+  filter(!is.na(fecundity)) %&gt;% 
+  filter(fecundity!=&quot;NaN&quot;) %&gt;% 
+  droplevels()
+
+  ## adjust levels to maintain plot order
+atrc$vial &lt;- factor(atrc$vial, levels = c(&quot;35u&quot;,&quot;30p&quot;,&quot;4d&quot;,&quot;11c&quot;,&quot;28n&quot;,&quot;1a&quot;,&quot;71k&quot;,&quot;2b&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;70j&quot;,&quot;15h&quot;,&quot;16i&quot;,&quot;13g&quot;,&quot;Gno&quot;,&quot;Ax&quot;))
+
+  ## build vectors for plot shading
+plot_colors &lt;- c(&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;green&quot;,&quot;green&quot;,&quot;purple&quot;,&quot;magenta&quot;,&quot;black&quot;)
+plot_lines &lt;- c(&quot;solid&quot;,&quot;longdash&quot;,&quot;dotted&quot;,&quot;dotdash&quot;,&quot;dashed&quot;,&quot;solid&quot;,&quot;longdash&quot;,&quot;dotted&quot;,&quot;dotdash&quot;,&quot;dashed&quot;,&quot;twodash&quot;,&quot;solid&quot;,&quot;longdash&quot;,&quot;solid&quot;,&quot;solid&quot;,&quot;solid&quot;)
+
+plot(g_legend(ggplot(atrc, aes(x = date3, y=fecundity, group = vial, col = vial, fill = vial, linetype = vial)) +
+    geom_smooth(aes(y = fecundity, linetype = vial), alpha = 0.07) +
+    scale_color_manual(values = plot_colors, name = NULL, labels = c(expression(italic(A.~aceti)),expression(italic(A.~pasteurianus)),expression(italic(A.~pomorum)~DmCS),expression(italic(A.~tropicalis)~DmCS),expression(italic(A.~tropicalis)~NBRC),expression(italic(L.~brevis)~DmCS),expression(italic(L.~brevis)~gravesensis),expression(italic(L.~plantarum)~DmCS),expression(italic(L.~plantarum)~WCFS1),expression(italic(L.~fructivorans)~DmCS),expression(italic(L.~fructivorans)~KCTC),expression(italic(E.~coli)),expression(italic(P.~putida)),expression(italic(B.~subtilis)),&#39;5-species&#39;,&#39;Axenic&#39;)) +
+   scale_fill_manual(values = plot_colors, name = NULL,labels = c(expression(italic(A.~aceti)),expression(italic(A.~pasteurianus)),expression(italic(A.~pomorum)~DmCS),expression(italic(A.~tropicalis)~DmCS),expression(italic(A.~tropicalis)~NBRC),expression(italic(L.~brevis)~DmCS),expression(italic(L.~brevis)~gravesensis),expression(italic(L.~plantarum)~DmCS),expression(italic(L.~plantarum)~WCFS1),expression(italic(L.~fructivorans)~DmCS),expression(italic(L.~fructivorans)~KCTC),expression(italic(E.~coli)),expression(italic(P.~putida)),expression(italic(B.~subtilis)),&#39;5-species&#39;,&#39;Axenic&#39;)) +
+    scale_linetype_manual(values = plot_lines,name = NULL,labels = c(expression(italic(A.~aceti)),expression(italic(A.~pasteurianus)),expression(italic(A.~pomorum)~DmCS),expression(italic(A.~tropicalis)~DmCS),expression(italic(A.~tropicalis)~NBRC),expression(italic(L.~brevis)~DmCS),expression(italic(L.~brevis)~gravesensis),expression(italic(L.~plantarum)~DmCS),expression(italic(L.~plantarum)~WCFS1),expression(italic(L.~fructivorans)~DmCS),expression(italic(L.~fructivorans)~KCTC),expression(italic(E.~coli)),expression(italic(P.~putida)),expression(italic(B.~subtilis)),&#39;5-species&#39;,&#39;Axenic&#39;)) +
+ # coord_cartesian(ylim = c(0,0.75)) +
+    ylab(&quot;female fecundity per day&quot;) +
+    xlab(&quot;days&quot;) +
+    guides(fill = guide_legend(ncol = 1, byrow=T), color = guide_legend(ncol = 1, byrow=T), linetype = guide_legend(ncol = 1, byrow=T)) +
+    theme_cowplot() +
+    theme(legend.position = &quot;right&quot;, legend.text.align = 0, legend.text = element_text(size = 10), axis.text = element_text(size = 12),axis.title = element_text(size = 14),legend.justification = &quot;left&quot;, legend.key.width = unit(x = .4, units = &quot;in&quot;),legend.background = element_rect(fill = &quot;white&quot;), strip.background = element_rect(fill = &quot;white&quot;))
+)
+)</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":5,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":480,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-figure-1d" class="section level3">
+<h3>Figure 1D</h3>
+<div class="tutorial-exercise" data-label="Figure_1D" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>  ## this code is derived from loops used for supplemental figures, so in some cases it looks like it has more variables than it needs
+
+  #print 1 plot with  the same survival in each line. each line is the age class that was permuted for survival
+q = 1
+xgroup = unlist(p$group[q])
+subset_vec = unlist(unname(p$vec[q]))
+rangevals &lt;- c(1)
+m &lt;- rangevals
+n = 1
+eigens &lt;- data.frame(vial = factor(), trt = character(), exp = factor(), fitness = numeric(), mod_death = numeric())
+eigenvalue_df &lt;- data.frame(vial = character(), trt = character(), exp = factor(), fitness = numeric())
+mod = n
+age_class = m
+
+subfitness &lt;- fitness %&gt;% filter(vial %in% subset_vec)
+
+for(i in names(table(list(subfitness$trt)))) {
+  submat &lt;- fitness %&gt;% 
+    filter(trt==i) %&gt;% 
+    filter(date3 == min(date3)) %&gt;% 
+    mutate(date3 = 0) %&gt;%
+    mutate(fecundity = 0) %&gt;%
+    rbind(fitness %&gt;% 
+            filter(trt==i) %&gt;% 
+            arrange(date3)
+          ) %&gt;%
+    rbind(fitness %&gt;%
+            filter(trt == i) %&gt;%
+            filter(date3 == max(date3)) %&gt;% 
+            mutate(date3 = max(date3)+1) %&gt;%
+            mutate(fecundity = 0)
+    )
+  submat$s = 1
+  submat$f = 0
+  
+  for (j in 1:(dim(submat)[1]-1)) {
+     submat$s[j] &lt;- (submat$cum_female[j+1] / submat$cum_female[j])
+     submat$f[j] &lt;- submat$fecundity[j] #* submat$s[j]
+  }
+
+  leslie_mat &lt;- matrix(data = c(unlist(submat$f[1:dim(submat)[1]])), nrow= 1)
+  if (age_class&gt;1) {
+    for (k in 1:(age_class-1)) {
+      leslie_mat &lt;- rbind(leslie_mat,
+                          matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+      )
+    } 
+  }
+  
+  for (k in age_class:min(age_class,(dim(submat)[1]-1))) {
+    leslie_mat &lt;- rbind(leslie_mat, 
+                        matrix(c(rep(0,k-1),submat$s[k]*mod,rep(0,(dim(submat)[1]-k))), nrow=1)
+    )
+  }
+  if(age_class &lt; (dim(submat)[1]-1)) {
+    for(k in (age_class+1):(dim(submat)[1]-1)) {
+       leslie_mat &lt;- rbind(leslie_mat,
+                            matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+        )
+    }
+  }
+  
+  eigenvalue_df &lt;- eigenvalue_df %&gt;% rbind(data.frame(vial = as.character(i), trt = as.character(submat$vial[1]), exp = as.factor(as.character(submat$date2[1])), fitness = as.numeric(eigen(leslie_mat)$values[1])))
+
+}
+
+eigens &lt;- eigens %&gt;% rbind(eigenvalue_df %&gt;% mutate(fitness = log(fitness)) %&gt;% mutate(mod_death = (m)))
+
+e3 &lt;- eigens
+eigens &lt;- eigens %&gt;% filter(trt%in%subset_vec) %&gt;% droplevels()
+eigens$trt &lt;- factor(eigens$trt, levels = subset_vec)
+
+efg &lt;- dunn.test(eigens$fitness,eigens$trt, method = &quot;bh&quot;, table = F)
+ghi &lt;- cldList(comparison = efg$comparisons, p.value = efg$P.adjusted, threshold = 0.05, print.comp = F) %&gt;% 
+arrange(factor(Group, levels = c(&quot;35u&quot;,&quot;3p&quot;,&quot;4d&quot;,&quot;11c&quot;,&quot;28n&quot;,&quot;1a&quot;,&quot;71k&quot;,&quot;2b&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;7j&quot;,&quot;15h&quot;,&quot;16i&quot;,&quot;13g&quot;,&quot;Gno&quot;,&quot;Ax&quot;)))
+
+eigens2 &lt;- eigens %&gt;% group_by(trt, mod_death) %&gt;% summarize(meanfit = mean(fitness), sem = sd(fitness)/sqrt(sum(fitness&gt;-1000))) %&gt;% ungroup()
+eigens2$trt &lt;- factor(eigens2$trt, levels = c(&quot;35u&quot;,&quot;30p&quot;,&quot;4d&quot;,&quot;11c&quot;,&quot;28n&quot;,&quot;1a&quot;,&quot;71k&quot;,&quot;2b&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;70j&quot;,&quot;15h&quot;,&quot;16i&quot;,&quot;13g&quot;,&quot;Gno&quot;,&quot;Ax&quot;))
+eigens2 &lt;- eigens2 %&gt;% arrange(factor(trt, levels = c(&quot;35u&quot;,&quot;30p&quot;,&quot;4d&quot;,&quot;11c&quot;,&quot;28n&quot;,&quot;1a&quot;,&quot;71k&quot;,&quot;2b&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;70j&quot;,&quot;15h&quot;,&quot;16i&quot;,&quot;13g&quot;,&quot;Gno&quot;,&quot;Ax&quot;)))
+eigens2$trt &lt;- plyr::revalue(eigens2$trt, c(&quot;35u&quot; = &quot;aace&quot;,&quot;30p&quot; = &quot;apan&quot;,&quot;4d&quot; = &quot;apoc&quot;,&quot;11c&quot;=&quot;atrc&quot;, &quot;28n&quot;=&quot;atrn&quot;,&quot;1a&quot; = &quot;lbrc&quot;,&quot;71k&quot; = &quot;lbga&quot;,&quot;2b&quot; = &quot;lplc&quot;, &quot;75o&quot; = &quot;lplw&quot;,&quot;3c&quot; = &quot;lfrc&quot;,&quot;70j&quot; = &quot;lfrk&quot;,&quot;15h&quot; = &quot;ecok&quot;, &quot;16i&quot; = &quot;pput&quot;,&quot;13g&quot; = &quot;bsub&quot;,&quot;Ax&quot; = &quot;Ax&quot;,&quot;Gno&quot; = &quot;5sp&quot;))
+
+plot_colors &lt;- c(&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;green&quot;,&quot;green&quot;,&quot;purple&quot;,&quot;magenta&quot;,&quot;black&quot;)
+plot_lines &lt;- c(&quot;solid&quot;,&quot;longdash&quot;,&quot;dotted&quot;,&quot;dotdash&quot;,&quot;dashed&quot;,&quot;solid&quot;,&quot;longdash&quot;,&quot;dotted&quot;,&quot;dotdash&quot;,&quot;dashed&quot;,&quot;twodash&quot;,&quot;solid&quot;,&quot;longdash&quot;,&quot;solid&quot;,&quot;solid&quot;,&quot;solid&quot;)
+
+ggplot(eigens2, aes(x = trt, y=meanfit, ymax = meanfit+sem, ymin = meanfit-sem, col = trt, fill = trt)) + 
+  geom_col(size=2.5, col=plot_colors, fill = &quot;white&quot;, linetype = plot_lines) + 
+  geom_errorbar(width = 0.5, linetype = &quot;solid&quot;) + 
+  theme_cowplot() +
+  annotate(geom=&quot;text&quot;, x=c(1:length(table(list(eigens2$trt)))), y= c(eigens2$meanfit + eigens2$sem+median(eigens2$sem)), label = ghi$Letter, color = plot_colors, size=6, parse=T, hjust = 0, angle=90) + 
+  ylab(&quot;mean log fitness&quot;) +
+  xlab(&quot;treatment&quot;) +
+  coord_cartesian(ylim = c(0,2.7)) +
+  theme_cowplot() +
+  theme(axis.text.x = element_text(angle = 90),
+    legend.position = &quot;none&quot;,
+    text = element_text(size = 12)
+    )</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+Run Figure 1D statistics
+<div class="tutorial-exercise" data-label="Figure_1D_stats" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>q = 1
+xgroup = unlist(p$group[q])
+subset_vec = unlist(unname(p$vec[q]))
+rangevals &lt;- c(1)
+m &lt;- rangevals
+n = 1
+eigens &lt;- data.frame(vial = factor(), trt = character(), exp = factor(), fitness = numeric(), mod_death = numeric())
+eigenvalue_df &lt;- data.frame(vial = character(), trt = character(), exp = factor(), fitness = numeric())
+mod = n
+age_class = m
+
+subfitness &lt;- fitness %&gt;% filter(vial %in% subset_vec)
+
+for(i in names(table(list(subfitness$trt)))) {
+  submat &lt;- fitness %&gt;% 
+    filter(trt==i) %&gt;% 
+    filter(date3 == min(date3)) %&gt;% 
+    mutate(date3 = 0) %&gt;%
+    mutate(fecundity = 0) %&gt;%
+    rbind(fitness %&gt;% 
+            filter(trt==i) %&gt;% 
+            arrange(date3)
+          ) %&gt;%
+    rbind(fitness %&gt;%
+            filter(trt == i) %&gt;%
+            filter(date3 == max(date3)) %&gt;% 
+            mutate(date3 = max(date3)+1) %&gt;%
+            mutate(fecundity = 0)
+    )
+  submat$s = 1
+  submat$f = 0
+  
+  for (j in 1:(dim(submat)[1]-1)) {
+     submat$s[j] &lt;- (submat$cum_female[j+1] / submat$cum_female[j])
+     submat$f[j] &lt;- submat$fecundity[j] #* submat$s[j]
+  }
+
+  leslie_mat &lt;- matrix(data = c(unlist(submat$f[1:dim(submat)[1]])), nrow= 1)
+  if (age_class&gt;1) {
+    for (k in 1:(age_class-1)) {
+      leslie_mat &lt;- rbind(leslie_mat,
+                          matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+      )
+    } 
+  }
+  
+  for (k in age_class:min(age_class,(dim(submat)[1]-1))) {
+    leslie_mat &lt;- rbind(leslie_mat, 
+                        matrix(c(rep(0,k-1),submat$s[k]*mod,rep(0,(dim(submat)[1]-k))), nrow=1)
+    )
+  }
+  if(age_class &lt; (dim(submat)[1]-1)) {
+    for(k in (age_class+1):(dim(submat)[1]-1)) {
+       leslie_mat &lt;- rbind(leslie_mat,
+                            matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+        )
+    }
+  }
+  
+  eigenvalue_df &lt;- eigenvalue_df %&gt;% rbind(data.frame(vial = as.character(i), trt = as.character(submat$vial[1]), exp = as.factor(as.character(submat$date2[1])), fitness = as.numeric(eigen(leslie_mat)$values[1])))
+
+}
+
+eigens &lt;- eigens %&gt;% rbind(eigenvalue_df %&gt;% mutate(fitness = log(fitness)) %&gt;% mutate(mod_death = (m)))
+
+e3 &lt;- eigens
+eigens &lt;- eigens %&gt;% filter(trt%in%subset_vec) %&gt;% droplevels()
+eigens$trt &lt;- factor(eigens$trt, levels = subset_vec)
+
+efg &lt;- dunn.test(eigens$fitness,eigens$trt, method = &quot;bh&quot;, table = F)
+cldList(comparison = efg$comparisons, p.value = efg$P.adjusted, threshold = 0.05, print.comp = F) %&gt;%
+  arrange(factor(Group, levels = c(&quot;35u&quot;,&quot;3p&quot;,&quot;4d&quot;,&quot;11c&quot;,&quot;28n&quot;,&quot;1a&quot;,&quot;71k&quot;,&quot;2b&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;7j&quot;,&quot;15h&quot;,&quot;16i&quot;,&quot;13g&quot;,&quot;Gno&quot;,&quot;Ax&quot;))) %&gt;%
+  inner_join(lookup_code, by = c(&quot;Group&quot; = &quot;code3&quot;)) %&gt;% select(fullname, code1, Letter)</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-figure-1-legend" class="section level3">
+<h3>Figure 1 legend</h3>
+<div class="tutorial-exercise" data-label="Fig1A_legend" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>  ## take the proper subset of data
+atrc &lt;- fecundity %&gt;% 
+  filter(vial%in%c(&quot;35u&quot;,&quot;30p&quot;,&quot;4d&quot;,&quot;11c&quot;,&quot;28n&quot;,&quot;2b&quot;,&quot;71k&quot;,&quot;1a&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;70j&quot;,&quot;15h&quot;,&quot;16i&quot;,&quot;13g&quot;,&quot;Gno&quot;,&quot;Ax&quot;)) %&gt;% 
+  filter(!is.na(fecundity)) %&gt;% 
+  filter(fecundity!=&quot;NaN&quot;) %&gt;% 
+  droplevels()
+
+  ## adjust levels to maintain plot order
+atrc$vial &lt;- factor(atrc$vial, levels = c(&quot;35u&quot;,&quot;30p&quot;,&quot;4d&quot;,&quot;11c&quot;,&quot;28n&quot;,&quot;1a&quot;,&quot;71k&quot;,&quot;2b&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;70j&quot;,&quot;15h&quot;,&quot;16i&quot;,&quot;13g&quot;,&quot;Gno&quot;,&quot;Ax&quot;))
+
+  ## build vectors for plot shading
+plot_colors &lt;- c(&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;blue&quot;,&quot;green&quot;,&quot;green&quot;,&quot;purple&quot;,&quot;magenta&quot;,&quot;black&quot;)
+plot_lines &lt;- c(&quot;solid&quot;,&quot;longdash&quot;,&quot;dotted&quot;,&quot;dotdash&quot;,&quot;dashed&quot;,&quot;solid&quot;,&quot;longdash&quot;,&quot;dotted&quot;,&quot;dotdash&quot;,&quot;dashed&quot;,&quot;twodash&quot;,&quot;solid&quot;,&quot;longdash&quot;,&quot;solid&quot;,&quot;solid&quot;,&quot;solid&quot;)
+
+plot(g_legend(ggplot(atrc, aes(x = date3, y=fecundity, group = vial, col = vial, fill = vial, linetype = vial)) +
+    geom_smooth(aes(y = fecundity, linetype = vial), alpha = 0.07) +
+    scale_color_manual(values = plot_colors, name = NULL, labels = c(expression(italic(A.~aceti)),expression(italic(A.~pasteurianus)),expression(italic(A.~pomorum)~DmCS),expression(italic(A.~tropicalis)~DmCS),expression(italic(A.~tropicalis)~NBRC),expression(italic(L.~brevis)~DmCS),expression(italic(L.~brevis)~gravesensis),expression(italic(L.~plantarum)~DmCS),expression(italic(L.~plantarum)~WCFS1),expression(italic(L.~fructivorans)~DmCS),expression(italic(L.~fructivorans)~KCTC),expression(italic(E.~coli)),expression(italic(P.~putida)),expression(italic(B.~subtilis)),&#39;5-species&#39;,&#39;Axenic&#39;)) +
+   scale_fill_manual(values = plot_colors, name = NULL,labels = c(expression(italic(A.~aceti)),expression(italic(A.~pasteurianus)),expression(italic(A.~pomorum)~DmCS),expression(italic(A.~tropicalis)~DmCS),expression(italic(A.~tropicalis)~NBRC),expression(italic(L.~brevis)~DmCS),expression(italic(L.~brevis)~gravesensis),expression(italic(L.~plantarum)~DmCS),expression(italic(L.~plantarum)~WCFS1),expression(italic(L.~fructivorans)~DmCS),expression(italic(L.~fructivorans)~KCTC),expression(italic(E.~coli)),expression(italic(P.~putida)),expression(italic(B.~subtilis)),&#39;5-species&#39;,&#39;Axenic&#39;)) +
+    scale_linetype_manual(values = plot_lines,name = NULL,labels = c(expression(italic(A.~aceti)),expression(italic(A.~pasteurianus)),expression(italic(A.~pomorum)~DmCS),expression(italic(A.~tropicalis)~DmCS),expression(italic(A.~tropicalis)~NBRC),expression(italic(L.~brevis)~DmCS),expression(italic(L.~brevis)~gravesensis),expression(italic(L.~plantarum)~DmCS),expression(italic(L.~plantarum)~WCFS1),expression(italic(L.~fructivorans)~DmCS),expression(italic(L.~fructivorans)~KCTC),expression(italic(E.~coli)),expression(italic(P.~putida)),expression(italic(B.~subtilis)),&#39;5-species&#39;,&#39;Axenic&#39;)) +
+ # coord_cartesian(ylim = c(0,0.75)) +
+    ylab(&quot;female fecundity per day&quot;) +
+    xlab(&quot;days&quot;) +
+    guides(fill = guide_legend(ncol = 1, byrow=T), color = guide_legend(ncol = 1, byrow=T), linetype = guide_legend(ncol = 1, byrow=T)) +
+    theme_cowplot() +
+    theme(legend.position = &quot;right&quot;, legend.text.align = 0, legend.text = element_text(size = 10), axis.text = element_text(size = 12),axis.title = element_text(size = 14),legend.justification = &quot;left&quot;, legend.key.width = unit(x = .4, units = &quot;in&quot;),legend.background = element_rect(fill = &quot;white&quot;), strip.background = element_rect(fill = &quot;white&quot;))
+)
+)</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":3,"fig.height":5,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":288,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+</div>
+</div>
+<div id="section-figure-2" class="section level2">
+<h2>Figure 2</h2>
+<div id="section-figure-2ac" class="section level3">
+<h3>Figure 2AC</h3>
+<div class="tutorial-exercise" data-label="Figure_2AC" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p &lt;- list(vec = list(vec_bac = c(&quot;28n&quot;,&quot;30p&quot;,&quot;11c&quot;,&quot;Gno&quot;,&quot;4d&quot;,&quot;35u&quot;,&quot;Ax&quot;,&quot;2b&quot;,&quot;13g&quot;,&quot;15h&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;1a&quot;,&quot;70j&quot;,&quot;71k&quot;),
+                                vec_atmut = c(&quot;SDR&quot;,&quot;PVEC&quot;,&quot;GDH&quot;,&quot;GNDH&quot;),
+                                vec_ecmut = c(&quot;7636&quot;,&quot;10862&quot;)
+                                ),
+          group = list(&quot;group_bac&quot;,&quot;group_atmut&quot;,&quot;group_ecmut&quot;)
+          )
+
+q = 1
+  xgroup = unlist(p$group[q])
+  subset_vec = unlist(unname(p$vec[q]))
+eigens &lt;- data.frame(vial = factor(), trt = character(), exp = factor(), fitness = numeric(), mod_death = numeric(), permuted_val = character())
+
+  rangevals &lt;- c(1, 0.00001)
+
+for (n in list(c(1,1))) {
+  for (m in rangevals) {
+    eigenvalue_df &lt;- data.frame(vial = character(), trt = character(), exp = factor(), fitness = numeric())
+    distance = n
+    mod = m
+    subfitness &lt;- fitness %&gt;% filter(vial %in% subset_vec)
+    i = &quot;11c-11&quot;
+    for(i in names(table(list(subfitness$trt)))) {
+      
+      ## collect the relevant data for each Leslie matrix 
+      submat &lt;- 
+        # make first row
+        fitness %&gt;%  filter(trt==i) %&gt;% filter(date3 == min(date3)) %&gt;% mutate(date3 = 0) %&gt;% mutate(fecundity = 0) %&gt;% 
+        # the main matrix
+        rbind(fitness %&gt;% filter(trt==i) %&gt;% arrange(date3)) %&gt;%
+        # make last row
+        rbind(fitness %&gt;% filter(trt == i) %&gt;% filter(date3 == max(date3)) %&gt;%  mutate(date3 = max(date3)+1) %&gt;% mutate(fecundity = 0))
+
+      ## set the s and f coloumns to default values
+      submat$s = 1
+      submat$f = 0
+      
+      ## calculate s and f
+      for (j in 1:(dim(submat)[1]-1)) {
+         submat$s[j] &lt;- (submat$cum_female[j+1] / submat$cum_female[j])
+         submat$f[j] &lt;- submat$fecundity[j] #* submat$s[j]
+      }
+
+      ## begin the leslie matrix
+      leslie_mat &lt;- matrix(data = c(unlist(submat$f[1:dim(submat)[1]])), nrow= 1)
+      
+      ## build in the first unmodified cells 
+      if (n[1]&gt;1) {
+        for (k in 1:(n[1]-1)) {
+          leslie_mat &lt;- rbind(leslie_mat,
+                              matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+          )
+        } 
+      }
+      
+      ## build in cells that get modified by variable &#39;mod&#39; from &#39;rangevals&#39;
+      for (k in n[1]:min(n[2],(dim(submat)[1]-1))) {
+        leslie_mat &lt;- rbind(leslie_mat, 
+                            matrix(c(rep(0,k-1),submat$s[k]*mod,rep(0,(dim(submat)[1]-k))), nrow=1)
+        )
+      }
+
+      ## build in the unmodified cells that occur linearly after the modified ones
+      if(n[2] &lt; (dim(submat)[1]-1)) {
+        for(k in (n[2]+1):(dim(submat)[1]-1)) {
+           leslie_mat &lt;- rbind(leslie_mat,
+                                matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+            )
+        }
+      }
+      
+      ## the matrix
+      leslie_mat
+      
+      ## calculate the first eigenvalue in the eigenvector of the Leslie matrix
+      eigenvalue_df &lt;- eigenvalue_df %&gt;% rbind(data.frame(vial = as.character(i), trt = as.character(submat$vial[1]), exp = as.factor(as.character(submat$date2[1])), fitness = as.numeric(eigen(leslie_mat)$values[1])))
+      
+    }
+    
+  ## add that row with the eigenvalue to a growing data frame
+  eigens &lt;- eigens %&gt;% rbind(eigenvalue_df %&gt;% mutate(mod_death = (m), permuted_val = paste0(n[1],&quot;_&quot;,n[2])))
+  }
+}
+
+for(k in names(table(list(eigens$mod_death)))) {
+
+    ## get rid of unnecessary rows  
+    eigensA &lt;- eigens %&gt;% filter(trt%in%subset_vec) %&gt;% filter(permuted_val == &quot;1_1&quot;) %&gt;%droplevels()
+  
+  ## convert trt to a factor
+  eigensA$trt &lt;- factor(eigensA$trt, levels = subset_vec)
+  
+  eigens2a &lt;- eigensA %&gt;% filter(mod_death == 1) %&gt;% dplyr::rename(unpermuted_fitness = fitness) %&gt;% droplevels()
+  eigens2b &lt;- eigensA %&gt;% filter(mod_death == k) %&gt;% dplyr::rename(permuted_fitness = fitness) %&gt;% droplevels()
+  
+  eigens3 &lt;- eigens2a %&gt;% inner_join(eigens2b, by=&quot;vial&quot;)
+  
+  cortest &lt;- cor.test(eigens3$unpermuted_fitness, eigens3$permuted_fitness, method = &quot;spearman&quot;, exact=F)
+    print(paste0(&quot;Correlation test between observed fitness and when fitness is calculated from &quot;,1/as.numeric(as.character(k)),&quot;-fold reduction in fly survival values. N = &quot;,dim(eigens3 %&gt;% filter(unpermuted_fitness &gt; 0 &amp; permuted_fitness&gt;0))[1]))
+  print(cortest)
+  
+  colors &lt;- data.frame(table(list(eigens3$trt.x))) %&gt;% mutate(col = as.factor(c(&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;black&quot;,&quot;purple&quot;,&quot;red&quot;,&quot;red&quot;,&quot;green&quot;,rep(&quot;blue&quot;,4),&quot;cyan&quot;,rep(&quot;blue&quot;,2))))
+  eigens4 &lt;- eigens3 %&gt;% inner_join(colors, by=c(&quot;trt.x&quot;=&quot;Var1&quot;))
+  plotp = round(cortest$p.value,4)
+  plotrho = round(cortest$estimate,4)
+  plotlabel = paste0(&quot;p = &quot;,plotp,&quot;; rho = &quot;,plotrho)
+  plot_colors &lt;- eigens4$col
+  print(ggplot(eigens4, aes(unpermuted_fitness, permuted_fitness, color = col, fill=col)) + 
+     geom_point() +
+     scale_color_manual(values = c(&quot;black&quot;,&quot;blue&quot;,&quot;magenta&quot;,&quot;cyan&quot;,&quot;purple&quot;,&quot;red1&quot;), name = NULL, labels = c(&quot;Axenic&quot;,&quot;LAB&quot;,&quot;B. subtilis&quot;,&quot;Gamma&quot;,&quot;5-sp&quot;,&quot;AAB&quot;)) + 
+     scale_fill_manual(values = c(&quot;black&quot;,&quot;blue&quot;,&quot;magenta&quot;,&quot;cyan&quot;,&quot;purple&quot;,&quot;red1&quot;), name = NULL, labels = c(&quot;Axenic&quot;,&quot;LAB&quot;,&quot;B. subtilis&quot;,&quot;Gamma&quot;,&quot;5-sp&quot;,&quot;AAB&quot;)) + 
+     theme_cowplot() +
+     theme(legend.position = &quot;bottom&quot;) +
+     xlab(paste0(&quot;observed fitness&quot;))+
+     ylab(paste0(&quot;survival-permuted fitness&quot;))+
+      annotate(geom=&quot;label&quot;, x= min(eigens4$unpermuted_fitness), y = min(eigens4$permuted_fitness), label = deparse(plotlabel),size=6, parse=T, hjust = 0, fill = NA,label.size=0) + 
+     stat_smooth(method = &quot;lm&quot;, aes(unpermuted_fitness, permuted_fitness), inherit.aes = F)
+     
+)
+
+}</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.timelimit":1000,"exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-figure-2bd" class="section level3">
+<h3>Figure 2BD</h3>
+<div class="tutorial-exercise" data-label="Figure_2BD" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p &lt;- list(vec = list(vec_bac = c(&quot;28n&quot;,&quot;30p&quot;,&quot;11c&quot;,&quot;Gno&quot;,&quot;4d&quot;,&quot;35u&quot;,&quot;Ax&quot;,&quot;2b&quot;,&quot;13g&quot;,&quot;15h&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;1a&quot;,&quot;70j&quot;,&quot;71k&quot;),
+                                vec_atmut = c(&quot;SDR&quot;,&quot;PVEC&quot;,&quot;GDH&quot;,&quot;GNDH&quot;),
+                                vec_ecmut = c(&quot;7636&quot;,&quot;10862&quot;)
+                                ),
+          group = list(&quot;group_bac&quot;,&quot;group_atmut&quot;,&quot;group_ecmut&quot;)
+          )
+
+q = 1
+  xgroup = unlist(p$group[q])
+  subset_vec = unlist(unname(p$vec[q]))
+eigens &lt;- data.frame(vial = factor(), trt = character(), exp = factor(), fitness = numeric(), mod_death = numeric(), permuted_val = character())
+
+  rangevals &lt;- c(1,0.00001)
+
+for (n in list(c(1,1))) {
+  for (m in rangevals) {
+    eigenvalue_df &lt;- data.frame(vial = character(), trt = character(), exp = factor(), fitness = numeric())
+    distance = n
+    mod = m
+    subfitness &lt;- fitness %&gt;% filter(vial %in% subset_vec)
+    for(i in names(table(list(subfitness$trt)))) {
+      
+      ## collect the relevant data for each Leslie matrix 
+      submat &lt;- 
+        # make first row
+        fitness %&gt;%  filter(trt==i) %&gt;% filter(date3 == min(date3)) %&gt;% mutate(date3 = 0) %&gt;% mutate(fecundity = 0) %&gt;% 
+        # the main matrix
+        rbind(fitness %&gt;% filter(trt==i) %&gt;% arrange(date3)) %&gt;%
+        # make last row
+        rbind(fitness %&gt;% filter(trt == i) %&gt;% filter(date3 == max(date3)) %&gt;%  mutate(date3 = max(date3)+1) %&gt;% mutate(fecundity = 0))
+
+      ## set the s and f coloumns to default values
+      submat$s = 1
+      submat$f = 0
+      
+      ## calculate s and f
+      for (j in 1:(dim(submat)[1]-1)) {
+         submat$s[j] &lt;- (submat$cum_female[j+1] / submat$cum_female[j])
+         submat$f[j] &lt;- submat$fecundity[j] #* submat$s[j]
+      }
+
+      ## begin the leslie matrix
+      leslie_mat &lt;- matrix(data = c(unlist(submat$f[1:dim(submat)[1]])), nrow= 1)
+      leslie_mat[(n[1]+1):(n[2]+1)] &lt;- (leslie_mat[(n[1]+1):(n[2]+1)] * mod)
+      
+      ## build in the diagonal
+      for (k in 1:(dim(submat)[1]-1)) {
+        leslie_mat &lt;- rbind(leslie_mat, 
+                            matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+        )
+      }
+
+      ## the matrix
+
+      
+      ## calculate the first eigenvalue in the eigenvector of the Leslie matrix
+      eigenvalue_df &lt;- eigenvalue_df %&gt;% rbind(data.frame(vial = as.character(i), trt = as.character(submat$vial[1]), exp = as.factor(as.character(submat$date2[1])), fitness = as.numeric(eigen(leslie_mat)$values[1])))
+      
+    }
+    
+  ## add that row with the eigenvalue to a growing data frame
+  eigens &lt;- eigens %&gt;% rbind(eigenvalue_df %&gt;% mutate(mod_death = (m), permuted_val = paste0(n[1],&quot;_&quot;,n[2])))
+  }
+}
+
+for(k in names(table(list(eigens$mod_death)))) {
+
+    ## get rid of unnecessary rows  
+    eigensA &lt;- eigens %&gt;% filter(trt%in%subset_vec) %&gt;% filter(permuted_val == &quot;1_1&quot;) %&gt;%droplevels()
+  
+  ## convert trt to a factor
+  eigensA$trt &lt;- factor(eigensA$trt, levels = subset_vec)
+  
+  eigens2a &lt;- eigensA %&gt;% filter(mod_death == 1) %&gt;% rename(unpermuted_fitness = fitness) %&gt;% droplevels()
+  eigens2b &lt;- eigensA %&gt;% filter(mod_death == k) %&gt;% rename(permuted_fitness = fitness) %&gt;% droplevels()
+
+table(eigens2a$vial)
+  eigens3 &lt;- eigens2a %&gt;% inner_join(eigens2b, by=&quot;vial&quot;)
+  eigens3$unpermuted_fitness
+  
+  cortest &lt;- cor.test(eigens3$unpermuted_fitness, eigens3$permuted_fitness, method = &quot;spearman&quot;, exact=F)
+    print(paste0(&quot;Correlation test between observed fitness and when fitness is calculated from &quot;,1/as.numeric(as.character(k)),&quot;-fold reduction in fecundity values. N = &quot;,dim(eigens3 %&gt;% filter(unpermuted_fitness &gt; 0 &amp; permuted_fitness&gt;0))[1]))
+  print(cortest)
+
+  colors &lt;- data.frame(table(list(eigens3$trt.x))) %&gt;% mutate(col = as.factor(c(&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;black&quot;,&quot;purple&quot;,&quot;red&quot;,&quot;red&quot;,&quot;green&quot;,rep(&quot;blue&quot;,4),&quot;cyan&quot;,rep(&quot;blue&quot;,2))))
+  eigens4 &lt;- eigens3 %&gt;% inner_join(colors, by=c(&quot;trt.x&quot;=&quot;Var1&quot;))
+
+  plotp = round(cortest$p.value,4)
+  plotrho = round(cortest$estimate,4)
+  plotlabel = paste0(&quot;p = &quot;,plotp,&quot;; rho = &quot;,plotrho)
+  ## build the color palette for the plot
+  plot_colors &lt;- eigens4$col
+
+  print(ggplot(eigens4, aes(unpermuted_fitness, permuted_fitness, color = col, fill=col)) + 
+     geom_point() +
+     scale_color_manual(values = c(&quot;black&quot;,&quot;blue&quot;,&quot;magenta&quot;,&quot;cyan&quot;,&quot;purple&quot;,&quot;red1&quot;), name = NULL, labels = c(&quot;Axenic&quot;,&quot;LAB&quot;,&quot;B. subtilis&quot;,&quot;Gamma&quot;,&quot;5-sp&quot;,&quot;AAB&quot;)) + 
+     scale_fill_manual(values = c(&quot;black&quot;,&quot;blue&quot;,&quot;magenta&quot;,&quot;cyan&quot;,&quot;purple&quot;,&quot;red1&quot;), name = NULL, labels = c(&quot;Axenic&quot;,&quot;LAB&quot;,&quot;B. subtilis&quot;,&quot;Gamma&quot;,&quot;5-sp&quot;,&quot;AAB&quot;)) + 
+     theme_cowplot() +
+     theme(legend.position = &quot;bottom&quot;) +
+     xlab(paste0(&quot;observed fitness&quot;))+
+     ylab(paste0(&quot;fecundity-permuted fitness&quot;))+
+      annotate(geom=&quot;label&quot;, x= min(eigens4$unpermuted_fitness), y = min(eigens4$permuted_fitness), label = deparse(plotlabel),size=6, parse=T, hjust = 0, fill = NA,label.size=0) + 
+     stat_smooth(method = &quot;lm&quot;, aes(unpermuted_fitness, permuted_fitness), inherit.aes = F)
+)
+ 
+}</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.timelimit":1000,"exercise.checker":"NULL"}</script>
+</div>
+</div>
+</div>
+<div id="section-figure-3" class="section level2">
+<h2>Figure 3</h2>
+<div id="section-figure-3a-acetobacter" class="section level3">
+<h3>Figure 3A Acetobacter</h3>
+<div class="tutorial-exercise" data-label="Figure_3A_Acetobacter" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>  ## filter out the right data
+atrc &lt;- fecundity%&gt;% filter(vial%in%c(&quot;GDH&quot;,&quot;GNDH&quot;,&quot;PVEC&quot;,&quot;SDR&quot;))
+
+  ## set the plot order
+atrc$vial &lt;- factor(atrc$vial, levels = c(&quot;PVEC&quot;,&quot;SDR&quot;,&quot;GDH&quot;,&quot;GNDH&quot;))
+
+  ## set colors
+plot_colors &lt;- c(&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;)
+plot_lines &lt;- c(&quot;solid&quot;,&quot;dashed&quot;,&quot;dotted&quot;,&quot;dotdash&quot;)
+
+  ## make plot
+ggplot(atrc, aes(x = date3, y=fecundity, group = vial, col = vial, fill = vial, linetype = vial)) + 
+                stat_smooth(method = NULL, level= 0.95, alpha = 0.07) +
+                scale_color_manual(values = plot_colors, 
+                                   labels = c(&quot;Empty vector&quot;,&quot;S-oxidoreductase&quot;,&quot;Glucose dehydrogenase&quot;,&quot;Gluconate dehydrogenase&quot;), 
+                                   name = &quot;&quot;) + 
+                scale_fill_manual(values = plot_colors, 
+                                   labels = c(&quot;Empty vector&quot;,&quot;S-oxidoreductase&quot;,&quot;Glucose dehydrogenase&quot;,&quot;Gluconate dehydrogenase&quot;), 
+                                    name = &quot;&quot;)+
+                scale_linetype_manual(values = plot_lines, 
+                                   labels = c(&quot;Empty vector&quot;,&quot;S-oxidoreductase&quot;,&quot;Glucose dehydrogenase&quot;,&quot;Gluconate dehydrogenase&quot;), 
+                                    name = &quot;&quot;) + 
+                ylab(&quot;female fecundity per day&quot;) +
+                xlab(&quot;days&quot;) +
+                theme(legend.position = &quot;bottom&quot;) +
+                guides(fill = guide_legend(ncol = 3, byrow=T),
+                       color = guide_legend(ncol = 3, byrow=T),
+                       linetype = guide_legend(ncol = 3, byrow=T)
+                ) +
+                theme_cowplot() + 
+                theme(legend.position = &quot;bottom&quot;, 
+                      legend.text.align = 0,
+                      legend.key.width = unit(.5,&quot;in&quot;), 
+                      legend.justification = &quot;center&quot;,
+                      text = element_text(size = 12)
+                      )</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-figure-3a-e.-coli" class="section level3">
+<h3>Figure 3A E. coli</h3>
+<div class="tutorial-exercise" data-label="Figure_3A_ecoli" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>  ## filter out the right data
+atrc &lt;- fecundity%&gt;% filter(vial%in%c(&quot;7636&quot;, &quot;10862&quot;))
+
+  ## define plot order
+atrc$vial &lt;- factor(atrc$vial, levels = c(&quot;7636&quot;, &quot;10862&quot;))
+
+  ## set colors
+plot_colors &lt;- c(&quot;green&quot;,&quot;green&quot;)
+plot_lines &lt;- c(&quot;solid&quot;,&quot;dashed&quot;)
+
+  ## plot
+ggplot(atrc, aes(x = date3, y=fecundity, group = vial, col = vial, fill = vial, linetype = vial)) + 
+                stat_smooth(method = NULL, level= 0.95, alpha = 0.07) +
+                scale_color_manual(values = plot_colors, 
+                                   labels = c(&quot;WT&quot;,expression(metH)), 
+                                   name = &quot;&quot;) + 
+                scale_fill_manual(values = plot_colors, 
+                                   labels = c(&quot;WT&quot;,expression(metH)), 
+                                    name = &quot;&quot;)+
+                scale_linetype_manual(values = plot_lines, 
+                                   labels = c(&quot;WT&quot;,expression(metH)), 
+                                    name = &quot;&quot;) + 
+                ylab(&quot;female fecundity per day&quot;) +
+                xlab(&quot;days&quot;) +
+                theme(legend.position = &quot;bottom&quot;) +
+                guides(fill = guide_legend(ncol = 3, byrow=T),
+                       color = guide_legend(ncol = 3, byrow=T),
+                       linetype = guide_legend(ncol = 3, byrow=T)
+                      ) +
+                theme_cowplot() + 
+                theme(legend.position = &quot;bottom&quot;, 
+                      legend.text.align = 0,
+                      legend.key.width = unit(.5,&quot;in&quot;), 
+                      legend.justification = &quot;center&quot;,
+                      text = element_text(size = 12)
+                      )</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-figure-3b-acetobacter" class="section level3">
+<h3>Figure 3B Acetobacter</h3>
+<div class="tutorial-exercise" data-label="Figure_3B_Acetobacter" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>test_ls &lt;- lifespan_analysis %&gt;% 
+  filter(treatment %in% c(p$vec$vec_atmut)) %&gt;%
+  mutate(exp = as.factor(as.character(start_day))) %&gt;%
+  mutate(treatment = as.factor(as.character(treatment))) %&gt;%
+  droplevels()
+
+levels(test_ls$treatment)
+
+print(&quot;N per treatment&quot;)
+data.frame(table(test_ls$treatment)) %&gt;%
+  inner_join(lookup_code, by = c(&quot;Var1&quot; = &quot;code1&quot;)) %&gt;%
+  dplyr::select(fullname,Freq)
+
+test_ls$treatment &lt;- plyr::revalue(test_ls$treatment, c(&quot;PVEC&quot;=&quot;empty vector&quot;,&quot;SDR&quot; = &quot;oxidoreductase&quot;,&quot;GDH&quot; = &quot;Glucose DeH&quot;,&quot;GNDH&quot; = &quot;Gluconate DeH&quot;))
+
+test_ls$S&lt;-Surv(test_ls$time,test_ls$event)
+
+## log rank test
+print(&quot;Log rank test results&quot;)
+survdiff(S ~ treatment, data = test_ls)
+
+## pairwise log rank test results
+print(&quot;BH-corrected pairwise Log rank test results&quot;)
+model_all &lt;- pairwise_survdiff(S ~ treatment, data = test_ls)
+
+x &lt;- test_ls$treatment
+levs &lt;- levels(x)
+y &lt;- Surv(test_ls$time, test_ls$event)
+lvl_order &lt;- levels(x)[order(tapply(as.numeric(y)[1:length(x)], 
+                                        x, mean))]
+
+comps &lt;- as_tibble(model_all$p.value, rownames=&quot;row&quot;) %&gt;% 
+  pivot_longer(-row, names_to=&quot;col&quot;, values_to=&quot;p&quot;) %&gt;% 
+  na.omit()
+mycomps &lt;- as.matrix(comps[,1:2])
+signif &lt;- comps$p &lt; .05
+comps %&gt;% inner_join(lookup_code, by = c(&quot;row&quot; = &quot;code2&quot;)) %&gt;% inner_join(lookup_code, by = c(&quot;col&quot; = &quot;code2&quot;)) %&gt;% select(Comp1 = fullname.x, Comp2 = fullname.y, p)
+
+print(&quot;Compact letter displays&quot;)
+clds &lt;- multcomp:::insert_absorb(signif, 
+                         decreasing=FALSE, 
+                         comps=mycomps, 
+                         lvl_order=lvl_order)
+
+print(clds)
+
+name_val &lt;- c(&quot;b&quot;,&quot;a&quot;,&quot;bc&quot;,&quot;c&quot;)
+plot_colors &lt;- c(&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;)
+plot_lines &lt;- c(&quot;dotted&quot;,&quot;dotdash&quot;,&quot;solid&quot;,&quot;dashed&quot;)
+
+annot_val &lt;- test_ls %&gt;% group_by(treatment, event) %&gt;% summarize(total = dplyr::n()) %&gt;% reshape2::dcast(formula = treatment ~ event, value.var = &quot;total&quot;) %&gt;% mutate(percent = 1-(`1`/(`0`+`1`))) %&gt;% dplyr::select(percent) %&gt;% unlist() %&gt;% unname()
+
+#par(mai=c(1,1,.1,.1))
+plot(survfit(S ~ treatment, test_ls),     xlim = c(10,41),     col=plot_colors,     lty=plot_lines,     lwd=2,    xlab= &quot;time(d)&quot;,     ylab=&quot;fractional survival&quot;,      bty = &quot;n&quot;)
+for(i in 1:length(table(list(test_ls$treatment)))) {
+  legend(x = 36, y = annot_val[i], legend = name_val[i], text.col = plot_colors[i], bty = &quot;n&quot;, xjust = 0, yjust = .5, cex=1)#
+}
+
+## print the legend
+ ## filter out the right data
+atrc &lt;- fecundity%&gt;% filter(vial%in%c(&quot;GDH&quot;,&quot;GNDH&quot;,&quot;PVEC&quot;,&quot;SDR&quot;))
+
+  ## set the plot order
+atrc$vial &lt;- factor(atrc$vial, levels = c(&quot;PVEC&quot;,&quot;SDR&quot;,&quot;GDH&quot;,&quot;GNDH&quot;))
+
+  ## set colors
+plot_colors &lt;- c(&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;)
+plot_lines &lt;- c(&quot;solid&quot;,&quot;dashed&quot;,&quot;dotted&quot;,&quot;dotdash&quot;)
+
+  ## make plot
+plot(g_legend(ggplot(atrc, aes(x = date3, y=fecundity, group = vial, col = vial, fill = vial, linetype = vial)) + 
+                stat_smooth(method = NULL, level= 0.95, alpha = 0.07) +
+                scale_color_manual(values = plot_colors, 
+                                   labels = c(&quot;Empty vector&quot;,&quot;S-oxidoreductase&quot;,&quot;Glucose dehydrogenase&quot;,&quot;Gluconate dehydrogenase&quot;), 
+                                   name = &quot;&quot;) + 
+                scale_fill_manual(values = plot_colors, 
+                                   labels = c(&quot;Empty vector&quot;,&quot;S-oxidoreductase&quot;,&quot;Glucose dehydrogenase&quot;,&quot;Gluconate dehydrogenase&quot;), 
+                                    name = &quot;&quot;)+
+                scale_linetype_manual(values = plot_lines, 
+                                   labels = c(&quot;Empty vector&quot;,&quot;S-oxidoreductase&quot;,&quot;Glucose dehydrogenase&quot;,&quot;Gluconate dehydrogenase&quot;), 
+                                    name = &quot;&quot;) + 
+                ylab(&quot;female fecundity per day&quot;) +
+                xlab(&quot;days&quot;) +
+                theme(legend.position = &quot;bottom&quot;) +
+                guides(fill = guide_legend(ncol = 3, byrow=T),
+                       color = guide_legend(ncol = 3, byrow=T),
+                       linetype = guide_legend(ncol = 3, byrow=T)
+                ) +
+                theme_cowplot() + 
+                theme(legend.position = &quot;bottom&quot;, 
+                      legend.text.align = 0,
+                      legend.key.width = unit(.5,&quot;in&quot;), 
+                      legend.justification = &quot;center&quot;,
+                      text = element_text(size = 12)
+                      )
+)
+)</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-figure-3b-e.-coli" class="section level3">
+<h3>Figure 3B E. coli</h3>
+<div class="tutorial-exercise" data-label="Figure_3B_ecoli" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>test_ls &lt;- lifespan_analysis %&gt;% 
+  filter(treatment %in% c(p$vec$vec_ecmut)) %&gt;%
+  mutate(exp = as.factor(as.character(start_day))) %&gt;%
+  mutate(treatment = as.factor(as.character(treatment))) %&gt;%
+#  filter(treatment == &quot;7636&quot;) %&gt;%
+  droplevels()
+
+print(&quot;N per treatment&quot;)
+data.frame(table(test_ls$treatment)) %&gt;%
+  inner_join(lookup_code, by = c(&quot;Var1&quot; = &quot;code1&quot;)) %&gt;%
+  dplyr::select(fullname,Freq)
+
+test_ls$treatment &lt;- plyr::revalue(test_ls$treatment, c(&quot;7636&quot;=&quot;WT&quot;,&quot;10862&quot; = &quot;metH&quot;))
+
+test_ls$S&lt;-Surv(test_ls$time,test_ls$event)
+
+## log rank test
+print(&quot;Log rank test results&quot;)
+survdiff(S ~ treatment, data = test_ls)
+
+name_val &lt;- c(&quot;a&quot;,&quot;a&quot;)
+plot_colors &lt;- c(&quot;green&quot;,&quot;green&quot;)
+plot_lines &lt;- c(&quot;dashed&quot;,&quot;solid&quot;)
+
+annot_val &lt;- test_ls %&gt;% group_by(treatment, event) %&gt;% summarize(total = dplyr::n()) %&gt;% reshape2::dcast(formula = treatment ~ event, value.var = &quot;total&quot;) %&gt;% mutate(percent = 1-(`1`/(`0`+`1`))) %&gt;% dplyr::select(percent) %&gt;% unlist() %&gt;% unname()
+
+plot(survfit(S ~ treatment, test_ls),     xlim = c(10,41),     col=plot_colors,     lty=plot_lines,     lwd=2,    xlab= &quot;time(d)&quot;,     ylab=&quot;fractional survival&quot;,     bty = &quot;n&quot;)
+for(i in 1:length(table(list(test_ls$treatment)))) {
+  legend(x = 36, y = annot_val[i], legend = name_val[i], text.col = plot_colors[i], bty = &quot;n&quot;, xjust = 0, yjust = .5, )#
+}
+
+## plot legend
+ 
+  ## filter out the right data
+atrc &lt;- fecundity%&gt;% filter(vial%in%c(&quot;7636&quot;, &quot;10862&quot;))
+
+  ## define plot order
+atrc$vial &lt;- factor(atrc$vial, levels = c(&quot;7636&quot;, &quot;10862&quot;))
+
+  ## set colors
+plot_colors &lt;- c(&quot;green&quot;,&quot;green&quot;)
+plot_lines &lt;- c(&quot;solid&quot;,&quot;dashed&quot;)
+
+  ## plot
+ggplot(atrc, aes(x = date3, y=fecundity, group = vial, col = vial, fill = vial, linetype = vial)) + 
+                stat_smooth(method = NULL, level= 0.95, alpha = 0.07) +
+                scale_color_manual(values = plot_colors, 
+                                   labels = c(&quot;WT&quot;,expression(metH)), 
+                                   name = &quot;&quot;) + 
+                scale_fill_manual(values = plot_colors, 
+                                   labels = c(&quot;WT&quot;,expression(metH)), 
+                                    name = &quot;&quot;)+
+                scale_linetype_manual(values = plot_lines, 
+                                   labels = c(&quot;WT&quot;,expression(metH)), 
+                                    name = &quot;&quot;) + 
+                ylab(&quot;female fecundity per day&quot;) +
+                xlab(&quot;days&quot;) +
+                theme(legend.position = &quot;bottom&quot;) +
+                guides(fill = guide_legend(ncol = 3, byrow=T),
+                       color = guide_legend(ncol = 3, byrow=T),
+                       linetype = guide_legend(ncol = 3, byrow=T)
+                      ) +
+                theme_cowplot() + 
+                theme(legend.position = &quot;bottom&quot;, 
+                      legend.text.align = 0,
+                      legend.key.width = unit(.5,&quot;in&quot;), 
+                      legend.justification = &quot;center&quot;,
+                      text = element_text(size = 12)
+                      )</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-figure-3c" class="section level3">
+<h3>Figure 3C</h3>
+<div id="section-figure-3c-acetobacter" class="section level4">
+<h4>Figure 3C Acetobacter</h4>
+<div class="tutorial-exercise" data-label="Figure_3C_Acetobacter" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>total_fitness1 &lt;- fitness %&gt;% 
+  filter(!trt%in%c(&quot;GNDH-17&quot;,&quot;GNDH-18&quot;,&quot;GNDH-19&quot;,&quot;PVEC-17&quot;,&quot;PVEC-18&quot;,&quot;PVEC-19&quot;,&quot;SDR-17&quot;,&quot;GDH-17&quot;) &amp; !date3 %in% c(35,36)) %&gt;%
+  group_by(trt,vial) %&gt;%
+  summarize(mean_fec = sum(fecundity)) %&gt;% 
+  filter(vial %in% p$vec$vec_atmut)
+total_fitness1$vial &lt;- factor(total_fitness1$vial, levels = p$vec$vec_atmut)
+levels(total_fitness1$vial)
+
+print(&quot;N per treatment&quot;)
+data.frame(table(total_fitness1$vial)) %&gt;%
+  inner_join(lookup_code, by = c(&quot;Var1&quot; = &quot;code1&quot;)) %&gt;%
+  dplyr::select(fullname,Freq)
+
+total_fitness1$vial &lt;- plyr::revalue(total_fitness1$vial, c(&quot;PVEC&quot;=&quot;empty vector&quot;,&quot;SDR&quot; = &quot;oxidoreductase&quot;,&quot;GDH&quot; = &quot;Glucose DeH&quot;,&quot;GNDH&quot; = &quot;Gluconate DeH&quot;))
+
+print(&quot;KW test&quot;)
+kruskal.test(mean_fec ~ vial, total_fitness1)
+
+total_fitness2 &lt;- fitness %&gt;% 
+  filter(!trt%in%c(&quot;17&quot;,&quot;GNDH-18&quot;,&quot;GNDH-19&quot;,&quot;PVEC-17&quot;,&quot;PVEC-18&quot;,&quot;PVEC-19&quot;,&quot;SDR-17&quot;,&quot;GDH-17&quot;) &amp; !date3 %in% c(35,36)) %&gt;%
+  group_by(trt,vial) %&gt;%
+  summarize(mean_fec = sum(fecundity)) %&gt;% 
+  ungroup() %&gt;%
+  group_by(vial) %&gt;%
+  summarize(mean_fec2 = mean(mean_fec), sem_fec2 = sd(mean_fec)/sqrt(sum(mean_fec&gt;-30))) %&gt;% 
+  ungroup() %&gt;% 
+  filter(vial %in% p$vec$vec_atmut) %&gt;%
+  mutate(vial = as.factor(as.character(vial))) %&gt;% 
+  arrange(factor(vial, levels=p$vec$vec_atmut))
+
+total_fitness2$vial &lt;- factor(total_fitness2$vial, levels = p$vec$vec_atmut)
+total_fitness2$vial &lt;- plyr::revalue(total_fitness2$vial, c(&quot;PVEC&quot;=&quot;empty vector&quot;,&quot;SDR&quot; = &quot;oxidoreductase&quot;,&quot;GDH&quot; = &quot;Glucose DeH&quot;,&quot;GNDH&quot; = &quot;Gluconate DeH&quot;))
+plot_colors &lt;- c(&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;)
+plot_lines &lt;- c(&quot;solid&quot;,&quot;dashed&quot;,&quot;dotted&quot;,&quot;dotdash&quot;)
+
+print(ggplot(total_fitness2, aes(x = vial, y=mean_fec2, ymax = mean_fec2+sem_fec2, ymin = mean_fec2-sem_fec2, line = vial, linetype = vial)) + 
+        geom_col(size=2.5, col=plot_colors, fill = &quot;white&quot;, linetype = plot_lines) + 
+  geom_errorbar(width = 0.5, linetype = &quot;solid&quot;) + 
+    theme_cowplot() +
+      annotate(geom=&quot;label&quot;, x=c(1:length(table(list(total_fitness2$vial)))), y= c(total_fitness2$mean_fec2 + total_fitness2$sem_fec2+3), label = c(rep(&quot;a&quot;,4)), color = plot_colors, size=6, parse=T, hjust = .5, fill=NA, label.size=0) + 
+  ylab(&quot;lifetime fecundity per female&quot;) +
+  xlab(&quot;treatment&quot;) +
+  theme(text = element_text(size = 12)
+        )
+)</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-figure-3c-e.-coli" class="section level4">
+<h4>Figure 3C E. coli</h4>
+<div class="tutorial-exercise" data-label="Figure_3C_ecoli" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>total_fitness1 &lt;- fitness %&gt;% 
+  filter(!trt%in%c(&quot;GNDH-17&quot;,&quot;GNDH-18&quot;,&quot;GNDH-19&quot;,&quot;PVEC-17&quot;,&quot;PVEC-18&quot;,&quot;PVEC-19&quot;,&quot;SDR-17&quot;,&quot;GDH-17&quot;,&quot;35u-18&quot;,&quot;7636-13&quot;,&quot;7636-18&quot;) &amp; !date3 %in% c(35,36)) %&gt;%
+  group_by(trt,vial) %&gt;%
+  summarize(mean_fec = sum(fecundity)) %&gt;% 
+  filter(vial %in% p$vec$vec_ecmut)
+total_fitness1$vial &lt;- factor(total_fitness1$vial, levels = p$vec$vec_ecmut)
+
+print(&quot;N per treatment&quot;)
+data.frame(table(total_fitness1$vial)) %&gt;%
+  inner_join(lookup_code, by = c(&quot;Var1&quot; = &quot;code1&quot;)) %&gt;%
+  dplyr::select(fullname,Freq)
+
+total_fitness1$vial &lt;- plyr::revalue(total_fitness1$vial, c(&quot;7636&quot;=&quot;WT&quot;,&quot;10862&quot; = &quot;metH&quot;))
+
+print(&quot;Wilcoxon test&quot;)
+wilcox.test(mean_fec ~ vial, total_fitness1)
+
+total_fitness2 &lt;- fitness %&gt;% 
+  filter(!trt%in%c(&quot;17&quot;,&quot;7636-13&quot;,&quot;7636-18&quot;) &amp; !date3 %in% c(35,36)) %&gt;%
+  group_by(trt,vial) %&gt;%
+  summarize(mean_fec = sum(fecundity)) %&gt;% 
+  ungroup() %&gt;%
+  group_by(vial) %&gt;%
+  summarize(mean_fec2 = mean(mean_fec), sem_fec2 = sd(mean_fec)/sqrt(sum(mean_fec&gt;-30))) %&gt;% 
+  ungroup() %&gt;% 
+  filter(vial %in% p$vec$vec_ecmut) %&gt;%
+  mutate(vial = as.factor(as.character(vial))) %&gt;% 
+  arrange(factor(vial, levels=p$vec$vec_ecmut))
+
+total_fitness2$vial &lt;- factor(total_fitness2$vial, levels = p$vec$vec_ecmut)
+total_fitness2$vial &lt;- plyr::revalue(total_fitness2$vial, c(&quot;7636&quot;=&quot;WT&quot;,&quot;10862&quot; = &quot;metH&quot;))
+plot_colors &lt;- c(&quot;green&quot;,&quot;green&quot;)
+plot_lines &lt;- c(&quot;solid&quot;,&quot;dashed&quot;)
+
+print(ggplot(total_fitness2, aes(x = vial, y=mean_fec2, ymax = mean_fec2+sem_fec2, ymin = mean_fec2-sem_fec2, line = vial, linetype = vial)) + 
+        geom_col(size=2.5, col=plot_colors, fill = &quot;white&quot;, linetype = plot_lines) + 
+  geom_errorbar(width = 0.5, linetype = &quot;solid&quot;) + 
+    theme_cowplot() +
+      annotate(geom=&quot;label&quot;, x=c(1:length(table(list(total_fitness2$vial)))), y= c(total_fitness2$mean_fec2 + total_fitness2$sem_fec2+3), label = c(rep(&quot;a&quot;,2)), color = plot_colors, size=6, parse=T, hjust = .5, fill=NA, label.size=0) + 
+  ylab(&quot;lifetime fecundity per female&quot;) +
+  xlab(&quot;treatment&quot;) +
+  theme(text = element_text(size = 12)
+        )
+)</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+</div>
+</div>
+<div id="section-figure-3d" class="section level3">
+<h3>Figure 3D</h3>
+<div id="section-figure-3d-acetobacter" class="section level4">
+<h4>Figure 3D Acetobacter</h4>
+<div class="tutorial-exercise" data-label="Figure_3D_Acetobacter" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>q = 2
+
+xgroup = unlist(p$group[q])
+  subset_vec = unlist(unname(p$vec[q]))
+  rangevals &lt;- c(1)
+  n = 1
+    eigens &lt;- data.frame(vial = factor(), trt = character(), exp = factor(), fitness = numeric(), mod_death = numeric())
+    m = 1
+    for (m in rangevals) {
+      eigenvalue_df &lt;- data.frame(vial = character(), trt = character(), exp = factor(), fitness = numeric())
+      mod = n
+      age_class = m
+      subfitness &lt;- fitness %&gt;% filter(vial %in% subset_vec)
+      for(i in names(table(list(subfitness$trt)))) {
+      submat &lt;- fitness %&gt;% 
+        filter(trt==i) %&gt;% 
+        filter(date3 == min(date3)) %&gt;% 
+        mutate(date3 = 0) %&gt;%
+        mutate(fecundity = 0) %&gt;%
+        rbind(fitness %&gt;% 
+                filter(trt==i) %&gt;% 
+                arrange(date3)
+              ) %&gt;%
+        rbind(fitness %&gt;%
+                filter(trt == i) %&gt;%
+                filter(date3 == max(date3)) %&gt;% 
+                mutate(date3 = max(date3)+1) %&gt;%
+                mutate(fecundity = 0)
+        )
+      submat$s = 1
+      submat$f = 0
+    
+      for (j in 1:(dim(submat)[1]-1)) {
+         submat$s[j] &lt;- (submat$cum_female[j+1] / submat$cum_female[j])
+         submat$f[j] &lt;- submat$fecundity[j] #* submat$s[j]
+      }
+      submat
+      leslie_mat &lt;- matrix(data = c(unlist(submat$f[1:dim(submat)[1]])), nrow= 1)
+      if (age_class&gt;1) {
+        for (k in 1:(age_class-1)) {
+          leslie_mat &lt;- rbind(leslie_mat,
+                              matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+          )
+        } 
+      }
+      for (k in age_class:min(age_class,(dim(submat)[1]-1))) {
+        leslie_mat &lt;- rbind(leslie_mat, 
+                            matrix(c(rep(0,k-1),submat$s[k]*mod,rep(0,(dim(submat)[1]-k))), nrow=1)
+        )
+      }
+      if(age_class &lt; (dim(submat)[1]-1)) {
+        for(k in (age_class+1):(dim(submat)[1]-1)) {
+           leslie_mat &lt;- rbind(leslie_mat,
+                                matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+            )
+        }
+      }
+      #print(submat)
+      #print(leslie_mat)
+      eigenvalue_df &lt;- eigenvalue_df %&gt;% rbind(data.frame(vial = as.character(i), trt = as.character(submat$vial[1]), exp = as.factor(as.character(submat$date2[1])), fitness = as.numeric(eigen(leslie_mat)$values[1])))
+    
+    }
+      
+      eigens &lt;- eigens %&gt;% rbind(eigenvalue_df %&gt;% mutate(fitness = log(fitness)) %&gt;% mutate(mod_death = (m)))
+    }
+    
+    eigens &lt;- eigens %&gt;% filter(trt%in%subset_vec) %&gt;% droplevels()
+    eigens$trt &lt;- factor(eigens$trt, levels = subset_vec)
+    
+    print(&quot;N per treatment&quot;)
+    print(table(eigens$trt))
+    print(&quot;KW test results&quot;)
+    kruskal.test(fitness ~ trt, eigens)
+
+    eigens2 &lt;- eigens %&gt;% group_by(trt, mod_death) %&gt;% summarize(meanfit = mean(fitness), sem = sd(fitness)/sqrt(sum(fitness&gt;-1000))) %&gt;% ungroup()
+    eigens2$trt &lt;- factor(eigens2$trt, levels = c(&quot;PVEC&quot;,&quot;SDR&quot;,&quot;GDH&quot;,&quot;GNDH&quot;))
+    eigens2 &lt;- eigens2 %&gt;% arrange(factor(trt, levels = c(&quot;PVEC&quot;,&quot;SDR&quot;,&quot;GDH&quot;,&quot;GNDH&quot;)))
+    eigens2$trt &lt;- plyr::revalue(eigens2$trt, c(&quot;PVEC&quot;=&quot;empty vector&quot;,&quot;SDR&quot; = &quot;oxidoreductase&quot;,&quot;GDH&quot; = &quot;Glucose DeH&quot;,&quot;GNDH&quot; = &quot;Gluconate DeH&quot;))
+
+    plot_colors &lt;- c(&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;red&quot;)
+    plot_lines &lt;- c(&quot;solid&quot;,&quot;dashed&quot;,&quot;dotted&quot;,&quot;dotdash&quot;)
+
+ggplot(eigens2, aes(x = trt, y=meanfit, ymax = meanfit+sem, ymin = meanfit-sem, col = trt, fill = trt)) + 
+        geom_col(size=2.5, col=plot_colors, fill = &quot;white&quot;, linetype = plot_lines) + 
+  geom_errorbar(width = 0.5, linetype = &quot;solid&quot;, col = &quot;red&quot;) + 
+    theme_cowplot() +
+      annotate(geom=&quot;text&quot;, x=c(1:length(table(list(eigens2$trt)))), y= c(eigens2$meanfit + eigens2$sem+median(eigens2$sem)*1.7), label = c(rep(&quot;a&quot;,4)), color = plot_colors, size=6, parse=T, hjust = 0.5,fill=NA, label.size=0) + 
+  ylab(&quot;mean log fitness&quot;) +
+  xlab(&quot;treatment&quot;) +
+  theme_cowplot() +
+  theme(text = element_text(size = 12),
+        legend.position = &quot;bottom&quot;
+        )</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-figure-3d-e.-coli" class="section level4">
+<h4>Figure 3D E. coli</h4>
+<div class="tutorial-exercise" data-label="Figure_3D_ecoli" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>q = 3
+xgroup = unlist(p$group[q])
+subset_vec = unlist(unname(p$vec[q]))
+rangevals &lt;- c(1)
+n = 1
+eigens &lt;- data.frame(vial = factor(), trt = character(), exp = factor(), fitness = numeric(), mod_death = numeric())
+m = 1
+for (m in rangevals) {
+  eigenvalue_df &lt;- data.frame(vial = character(), trt = character(), exp = factor(), fitness = numeric())
+  mod = n
+  age_class = m
+  subfitness &lt;- fitness %&gt;% filter(vial %in% subset_vec)
+  for(i in names(table(list(subfitness$trt)))) {
+  submat &lt;- fitness %&gt;% 
+    filter(trt==i) %&gt;% 
+    filter(date3 == min(date3)) %&gt;% 
+    mutate(date3 = 0) %&gt;%
+    mutate(fecundity = 0) %&gt;%
+    rbind(fitness %&gt;% 
+            filter(trt==i) %&gt;% 
+            arrange(date3)
+          ) %&gt;%
+    rbind(fitness %&gt;%
+            filter(trt == i) %&gt;%
+            filter(date3 == max(date3)) %&gt;% 
+            mutate(date3 = max(date3)+1) %&gt;%
+            mutate(fecundity = 0)
+    )
+  submat$s = 1
+  submat$f = 0
+
+  for (j in 1:(dim(submat)[1]-1)) {
+     submat$s[j] &lt;- (submat$cum_female[j+1] / submat$cum_female[j])
+     submat$f[j] &lt;- submat$fecundity[j] #* submat$s[j]
+  }
+  submat
+  leslie_mat &lt;- matrix(data = c(unlist(submat$f[1:dim(submat)[1]])), nrow= 1)
+  if (age_class&gt;1) {
+    for (k in 1:(age_class-1)) {
+      leslie_mat &lt;- rbind(leslie_mat,
+                          matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+      )
+    } 
+  }
+  for (k in age_class:min(age_class,(dim(submat)[1]-1))) {
+    leslie_mat &lt;- rbind(leslie_mat, 
+                        matrix(c(rep(0,k-1),submat$s[k]*mod,rep(0,(dim(submat)[1]-k))), nrow=1)
+    )
+  }
+  if(age_class &lt; (dim(submat)[1]-1)) {
+    for(k in (age_class+1):(dim(submat)[1]-1)) {
+       leslie_mat &lt;- rbind(leslie_mat,
+                            matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+        )
+    }
+  }
+  #print(submat)
+  #print(leslie_mat)
+  eigenvalue_df &lt;- eigenvalue_df %&gt;% rbind(data.frame(vial = as.character(i), trt = as.character(submat$vial[1]), exp = as.factor(as.character(submat$date2[1])), fitness = as.numeric(eigen(leslie_mat)$values[1])))
+
+}
+  
+  eigens &lt;- eigens %&gt;% rbind(eigenvalue_df %&gt;% mutate(fitness = log(fitness)) %&gt;% mutate(mod_death = (m)))
+}
+
+eigens &lt;- eigens %&gt;% filter(trt%in%subset_vec) %&gt;% droplevels()
+eigens$trt &lt;- factor(eigens$trt, levels = subset_vec)
+print(&quot;N per treatment&quot;)
+print(table(eigens$trt))
+
+print(&quot;Wilcoxon test results&quot;)
+wilcox.test(fitness ~ trt, eigens)
+
+eigens2 &lt;- eigens %&gt;% group_by(trt, mod_death) %&gt;% summarize(meanfit = mean(fitness), sem = sd(fitness)/sqrt(sum(fitness&gt;-1000))) %&gt;% ungroup()
+eigens2$trt &lt;- factor(eigens2$trt, levels = c(&quot;7636&quot;,&quot;10862&quot;))
+eigens2 &lt;- eigens2 %&gt;% arrange(factor(trt, levels = c(&quot;7636&quot;,&quot;10862&quot;)))
+eigens2$trt &lt;- plyr::revalue(eigens2$trt, c(&quot;7636&quot;=&quot;WT&quot;,&quot;10862&quot; = &quot;metH&quot;))
+
+plot_colors &lt;- c(&quot;green&quot;,&quot;green&quot;)
+plot_lines &lt;- c(&quot;solid&quot;,&quot;dashed&quot;)
+
+ggplot(eigens2, aes(x = trt, y=meanfit, ymax = meanfit+sem, ymin = meanfit-sem, col = trt, fill = trt)) + 
+        geom_col(size=2.5, col=plot_colors, fill = &quot;white&quot;, linetype = plot_lines) + 
+  geom_errorbar(width = 0.5, linetype = &quot;solid&quot;, col = &quot;green&quot;) + 
+    theme_cowplot() +
+      annotate(geom=&quot;text&quot;, x=c(1:length(table(list(eigens2$trt)))), y= c(eigens2$meanfit + eigens2$sem+median(eigens2$sem)*1.7), label = c(rep(&quot;a&quot;,2)), color = plot_colors, size=6, parse=T, hjust = 0.5,fill=NA, label.size=0) + 
+  ylab(&quot;mean fitness&quot;) +
+  xlab(&quot;treatment&quot;) +
+  theme_cowplot() +
+  theme(text = element_text(size = 12),
+        legend.position = &quot;none&quot;
+        )</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+</div>
+</div>
+</div>
+<div id="section-figure-s1" class="section level2">
+<h2>Figure S1</h2>
+<div class="tutorial-exercise" data-label="Figure_S1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p &lt;- list(vec = list(vec_bac = c(&quot;28n&quot;,&quot;30p&quot;,&quot;11c&quot;,&quot;Gno&quot;,&quot;4d&quot;,&quot;35u&quot;,&quot;Ax&quot;,&quot;2b&quot;,&quot;13g&quot;,&quot;15h&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;1a&quot;,&quot;70j&quot;,&quot;71k&quot;),
+                                vec_atmut = c(&quot;SDR&quot;,&quot;PVEC&quot;,&quot;GDH&quot;,&quot;GNDH&quot;),
+                                vec_ecmut = c(&quot;7636&quot;,&quot;10862&quot;)
+                                ),
+          group = list(&quot;group_bac&quot;,&quot;group_atmut&quot;,&quot;group_ecmut&quot;)
+          )
+
+q = 1
+
+#print 1 plot with  the same survival in each line. each line is the age class that was permuted for survival
+xgroup = unlist(p$group[q])
+  subset_vec = unlist(unname(p$vec[q]))
+  rangevals = 1
+  rangevals &lt;- c(1:7)
+  n= 0.00001
+  for (n in c(.5,.1,.05,.01,.005,.001,.0001,.00001)) {
+    eigens &lt;- data.frame(vial = factor(), trt = character(), exp = factor(), fitness = numeric(), mod_death = numeric())
+    m = 1
+    for (m in rangevals) {
+      eigenvalue_df &lt;- data.frame(vial = character(), trt = character(), exp = factor(), fitness = numeric())
+      mod = n
+      age_class = m
+      subfitness &lt;- fitness %&gt;% filter(vial %in% subset_vec)
+      for(i in names(table(list(subfitness$trt)))) {
+      submat &lt;- fitness %&gt;% 
+        filter(trt==i) %&gt;% 
+        filter(date3 == min(date3)) %&gt;% 
+        mutate(date3 = 0) %&gt;%
+        mutate(fecundity = 0) %&gt;%
+        rbind(fitness %&gt;% 
+                filter(trt==i) %&gt;% 
+                arrange(date3)
+              ) %&gt;%
+        rbind(fitness %&gt;%
+                filter(trt == i) %&gt;%
+                filter(date3 == max(date3)) %&gt;% 
+                mutate(date3 = max(date3)+1) %&gt;%
+                mutate(fecundity = 0)
+        )
+      submat$s = 1
+      submat$f = 0
+    
+      for (j in 1:(dim(submat)[1]-1)) {
+         submat$s[j] &lt;- (submat$cum_female[j+1] / submat$cum_female[j])
+         submat$f[j] &lt;- submat$fecundity[j] #* submat$s[j]
+      }
+      submat
+      leslie_mat &lt;- matrix(data = c(unlist(submat$f[1:dim(submat)[1]])), nrow= 1)
+      if (age_class&gt;1) {
+        for (k in 1:(age_class-1)) {
+          leslie_mat &lt;- rbind(leslie_mat,
+                              matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+          )
+        } 
+      }
+      for (k in age_class:min(age_class,(dim(submat)[1]-1))) {
+        leslie_mat &lt;- rbind(leslie_mat, 
+                            matrix(c(rep(0,k-1),submat$s[k]*mod,rep(0,(dim(submat)[1]-k))), nrow=1)
+        )
+      }
+      if(age_class &lt; (dim(submat)[1]-1)) {
+        for(k in (age_class+1):(dim(submat)[1]-1)) {
+           leslie_mat &lt;- rbind(leslie_mat,
+                                matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+            )
+        }
+      }
+
+      eigenvalue_df &lt;- eigenvalue_df %&gt;% rbind(data.frame(vial = as.character(i), trt = as.character(submat$vial[1]), exp = as.factor(as.character(submat$date2[1])), fitness = as.numeric(eigen(leslie_mat)$values[1])))
+    
+    }
+      
+      eigens &lt;- eigens %&gt;% rbind(eigenvalue_df %&gt;% mutate(fitness = log(fitness)) %&gt;% mutate(mod_death = (m)))
+    }
+    
+    eigens &lt;- eigens %&gt;% filter(trt%in%subset_vec) %&gt;% droplevels()
+    eigens$trt &lt;- factor(eigens$trt, levels = subset_vec)
+    eigens2 &lt;- eigens %&gt;% group_by(trt, mod_death) %&gt;% summarize(meanfit = mean(fitness))
+    plot_colors &lt;- colorRampPalette(c(&quot;red&quot;, &quot;black&quot;))
+    
+    table(list(eigens$trt))
+    
+    table(list(eigens$mod_death))
+    for(i in rangevals) {
+      cat(&#39;\n&#39;)
+      print(&quot;######################################################&quot;)
+      print(paste0(&quot;These are the statistics for age class &quot;,i,&quot; and survival divided by &quot;,1/n, sep = &quot;&quot;))
+      
+      
+      eigen_stats &lt;- eigens %&gt;% filter(mod_death == (i)) %&gt;% droplevels()
+      #print(str(eigen_stats))
+      #print(i)
+      kwoutput &lt;- try(kruskal.test(eigen_stats$fitness~ eigen_stats$trt), silent = T)
+      captured_output &lt;- capture.output(efg &lt;- dunn.test(eigen_stats$fitness,eigen_stats$trt, method = &quot;bh&quot;, table = F, kw = T))
+      if(kwoutput == &quot;Error in kruskal.test.default(numeric(0), structure(integer(0), .Label = character(0), class = \&quot;factor\&quot;)) : \n  all observations are in the same group\n&quot;) {
+        print(paste0(&quot;chi-sq statistic not significant&quot;))
+      } else {
+        print(paste0(&quot;chi-sq statistic: &quot;,round(kwoutput$statistic,2)))
+        print(paste0(&quot;df: &quot;,length(table(eigen_stats$trt))-1))
+        print(paste0(&quot;p: &quot;,signif(kwoutput$p.value,3)))      
+      }      
+      #print(i)
+      if(sum(efg$P.adjusted&lt;0.05)&gt;0) {
+        ghi &lt;- cldList(comparison = efg$comparisons, p.value = efg$P.adjusted, threshold = 0.05, print.comp = F) %&gt;% 
+        arrange(factor(Group, levels = subset_vec))
+        try(assign(x = paste0(&quot;es&quot;,i), value = as.vector(ghi$Letter)),T)
+      } else {
+        assign(x = paste0(&quot;es&quot;,i),value = rep(&quot;a&quot;,length(subset_vec)))
+      }
+      assign(x = paste0(&quot;estats&quot;,i), 
+                   value = eigen_stats %&gt;% 
+                     group_by(trt) %&gt;% 
+                     summarize(mean_fitness = mean(fitness)) %&gt;% 
+                     arrange(factor(trt, levels = subset_vec)) %&gt;%
+                     dplyr::select(mean_fitness) %&gt;%
+                     unlist() %&gt;% 
+                     unname()
+            )
+    }
+
+    eigens2$trt &lt;- plyr::revalue(eigens2$trt, c(&quot;28n&quot; = &quot;atrn&quot;,&quot;30p&quot; = &quot;apan&quot;, &quot;11c&quot;=&quot;atrc&quot;,&quot;Gno&quot; = &quot;5sp&quot;,&quot;4d&quot; = &quot;apoc&quot;, &quot;35u&quot; = &quot;aace&quot;,&quot;Ax&quot; = &quot;Ax&quot;,&quot;2b&quot; = &quot;lplc&quot;,&quot;13g&quot; = &quot;bsub&quot;,&quot;15h&quot; = &quot;ecok&quot;,&quot;75o&quot; = &quot;lplw&quot;,&quot;3c&quot; = &quot;lfrc&quot;, &quot;1a&quot; = &quot;lbrc&quot;,&quot;70j&quot; = &quot;lfrk&quot;, &quot;71k&quot; = &quot;lbga&quot;))
+
+   print(ggplot(eigens2, aes(x = trt, y=meanfit,group = as.factor(mod_death), col = as.factor(mod_death), fill = as.factor(mod_death))) + 
+        geom_step(aes(x = trt, y = meanfit)) + #, position = position_dodge(width = widthj), size = sizej) +
+     scale_color_manual(values = plot_colors(length(rangevals)),
+                       name = &quot;Age class&quot;) +
+        coord_cartesian(ylim = c(-2,3)) +
+        ylab(&quot;log fitness&quot;) +
+        xlab(&quot;bacterial treatment&quot;) +
+        theme(legend.position = &quot;bottom&quot;) +
+     guides(color = guide_legend(ncol = 5, byrow=T, reverse = T)) +
+        theme_cowplot() + 
+        theme(legend.position = &quot;bottom&quot;, 
+              legend.text.align = 0,
+              legend.key.width = unit(.5,&quot;in&quot;), 
+              legend.justification = &quot;center&quot;, 
+              text = element_text(size =12),
+              axis.text.x = element_text(angle = 90, hjust = 1)
+              ) + 
+      annotate(geom=&quot;label&quot;, x= c(1.05:(length(subset_vec)+0.05)), y= get(paste0(&quot;estats&quot;,rangevals[7]))+0.03, label = get(paste0(&quot;es&quot;,rangevals[7])),size=3, parse=T, hjust = 0, fill = NA,label.size=0)+
+      annotate(geom=&quot;label&quot;, x= c(1.05:(length(subset_vec)+0.05)), y= get(paste0(&quot;estats&quot;,rangevals[6]))+0.03, label = get(paste0(&quot;es&quot;,rangevals[6])),size=3, parse=T, hjust = 0, fill = NA,label.size=0)+
+      annotate(geom=&quot;label&quot;, x= c(1.05:(length(subset_vec)+0.05)), y= get(paste0(&quot;estats&quot;,rangevals[5]))+0.03, label = get(paste0(&quot;es&quot;,rangevals[5])),size=3, parse=T, hjust = 0, fill = NA,label.size=0)+
+          annotate(geom=&quot;label&quot;, x= c(1.05:(length(subset_vec)+0.05)), y= get(paste0(&quot;estats&quot;,rangevals[4]))+0.03, label = get(paste0(&quot;es&quot;,rangevals[4])),size=3, parse=T, hjust = 0, fill = NA,label.size=0)+
+          annotate(geom=&quot;label&quot;, x= c(1.05:(length(subset_vec)+0.05)), y= get(paste0(&quot;estats&quot;,rangevals[3]))+0.03, label = get(paste0(&quot;es&quot;,rangevals[3])),size=3, parse=T, hjust = 0, fill = NA,label.size=0)+
+          annotate(geom=&quot;label&quot;, x= c(1.05:(length(subset_vec)+0.05)), y= get(paste0(&quot;estats&quot;,rangevals[2]))+0.03, label = get(paste0(&quot;es&quot;,rangevals[2])),size=3, parse=T, hjust = 0, fill = NA,label.size=0)+
+          annotate(geom=&quot;label&quot;, x= c(1.05:(length(subset_vec)+0.05)), y= get(paste0(&quot;estats&quot;,rangevals[1]))+0.03, label = get(paste0(&quot;es&quot;,rangevals[1])),size=3, parse=T, hjust = 0, fill = NA,label.size=0)
+    )
+   # dev.off()
+}</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.timelimit":1000,"exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-figure-s2" class="section level2">
+<h2>Figure S2</h2>
+<div class="tutorial-exercise" data-label="Figure_S2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p &lt;- list(vec = list(vec_bac = c(&quot;28n&quot;,&quot;30p&quot;,&quot;11c&quot;,&quot;Gno&quot;,&quot;4d&quot;,&quot;35u&quot;,&quot;Ax&quot;,&quot;2b&quot;,&quot;13g&quot;,&quot;15h&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;1a&quot;,&quot;70j&quot;,&quot;71k&quot;),
+                                vec_atmut = c(&quot;SDR&quot;,&quot;PVEC&quot;,&quot;GDH&quot;,&quot;GNDH&quot;),
+                                vec_ecmut = c(&quot;7636&quot;,&quot;10862&quot;)
+                                ),
+          group = list(&quot;group_bac&quot;,&quot;group_atmut&quot;,&quot;group_ecmut&quot;)
+          )
+
+q = 1
+  xgroup = unlist(p$group[q])
+  subset_vec = unlist(unname(p$vec[q]))
+eigens &lt;- data.frame(vial = factor(), trt = character(), exp = factor(), fitness = numeric(), mod_death = numeric(), permuted_val = character())
+
+  rangevals &lt;- c(1, 0.5,0.1,0.05, 0.01, 0.005,0.001,0.0001,0.00001)
+
+for (n in list(c(1,1),c(2,2))) {
+  for (m in rangevals) {
+    eigenvalue_df &lt;- data.frame(vial = character(), trt = character(), exp = factor(), fitness = numeric())
+    distance = n
+    mod = m
+    subfitness &lt;- fitness %&gt;% filter(vial %in% subset_vec)
+    i = &quot;11c-11&quot;
+    for(i in names(table(list(subfitness$trt)))) {
+      
+      ## collect the relevant data for each Leslie matrix 
+      submat &lt;- 
+        # make first row
+        fitness %&gt;%  filter(trt==i) %&gt;% filter(date3 == min(date3)) %&gt;% mutate(date3 = 0) %&gt;% mutate(fecundity = 0) %&gt;% 
+        # the main matrix
+        rbind(fitness %&gt;% filter(trt==i) %&gt;% arrange(date3)) %&gt;%
+        # make last row
+        rbind(fitness %&gt;% filter(trt == i) %&gt;% filter(date3 == max(date3)) %&gt;%  mutate(date3 = max(date3)+1) %&gt;% mutate(fecundity = 0))
+
+      ## set the s and f coloumns to default values
+      submat$s = 1
+      submat$f = 0
+      
+      ## calculate s and f
+      for (j in 1:(dim(submat)[1]-1)) {
+         submat$s[j] &lt;- (submat$cum_female[j+1] / submat$cum_female[j])
+         submat$f[j] &lt;- submat$fecundity[j] #* submat$s[j]
+      }
+
+      ## begin the leslie matrix
+      leslie_mat &lt;- matrix(data = c(unlist(submat$f[1:dim(submat)[1]])), nrow= 1)
+      
+      ## build in the first unmodified cells 
+      if (n[1]&gt;1) {
+        for (k in 1:(n[1]-1)) {
+          leslie_mat &lt;- rbind(leslie_mat,
+                              matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+          )
+        } 
+      }
+      
+      ## build in cells that get modified by variable &#39;mod&#39; from &#39;rangevals&#39;
+      for (k in n[1]:min(n[2],(dim(submat)[1]-1))) {
+        leslie_mat &lt;- rbind(leslie_mat, 
+                            matrix(c(rep(0,k-1),submat$s[k]*mod,rep(0,(dim(submat)[1]-k))), nrow=1)
+        )
+      }
+
+      ## build in the unmodified cells that occur linearly after the modified ones
+      if(n[2] &lt; (dim(submat)[1]-1)) {
+        for(k in (n[2]+1):(dim(submat)[1]-1)) {
+           leslie_mat &lt;- rbind(leslie_mat,
+                                matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+            )
+        }
+      }
+      
+      ## the matrix
+      leslie_mat
+      
+      ## calculate the first eigenvalue in the eigenvector of the Leslie matrix
+      eigenvalue_df &lt;- eigenvalue_df %&gt;% rbind(data.frame(vial = as.character(i), trt = as.character(submat$vial[1]), exp = as.factor(as.character(submat$date2[1])), fitness = as.numeric(eigen(leslie_mat)$values[1])))
+      
+    }
+    
+  ## add that row with the eigenvalue to a growing data frame
+  eigens &lt;- eigens %&gt;% rbind(eigenvalue_df %&gt;% mutate(mod_death = (m), permuted_val = paste0(n[1],&quot;_&quot;,n[2])))
+  }
+}
+
+for(k in names(table(list(eigens$mod_death)))) {
+
+    ## get rid of unnecessary rows  
+    eigensA &lt;- eigens %&gt;% filter(trt%in%subset_vec) %&gt;% filter(permuted_val == &quot;1_1&quot;) %&gt;%droplevels()
+  
+  ## convert trt to a factor
+  eigensA$trt &lt;- factor(eigensA$trt, levels = subset_vec)
+  
+  eigens2a &lt;- eigensA %&gt;% filter(mod_death == 1) %&gt;% dplyr::rename(unpermuted_fitness = fitness) %&gt;% droplevels()
+  eigens2b &lt;- eigensA %&gt;% filter(mod_death == k) %&gt;% dplyr::rename(permuted_fitness = fitness) %&gt;% droplevels()
+  
+  eigens3 &lt;- eigens2a %&gt;% inner_join(eigens2b, by=&quot;vial&quot;)
+  
+  cortest &lt;- cor.test(eigens3$unpermuted_fitness, eigens3$permuted_fitness, method = &quot;spearman&quot;, exact=F)
+    print(paste0(&quot;Correlation test between observed fitness and when fitness is calculated from &quot;,1/as.numeric(as.character(k)),&quot;-fold reduction in fly survival values. N = &quot;,dim(eigens3 %&gt;% filter(unpermuted_fitness &gt; 0 &amp; permuted_fitness&gt;0))[1]))
+  print(cortest)
+  
+  colors &lt;- data.frame(table(list(eigens3$trt.x))) %&gt;% mutate(col = as.factor(c(&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;black&quot;,&quot;purple&quot;,&quot;red&quot;,&quot;red&quot;,&quot;green&quot;,rep(&quot;blue&quot;,4),&quot;cyan&quot;,rep(&quot;blue&quot;,2))))
+  eigens4 &lt;- eigens3 %&gt;% inner_join(colors, by=c(&quot;trt.x&quot;=&quot;Var1&quot;))
+
+  plotp = round(cortest$p.value,4)
+  plotrho = round(cortest$estimate,4)
+  plotlabel = paste0(&quot;p = &quot;,plotp,&quot;; rho = &quot;,plotrho)
+  plot_colors &lt;- eigens4$col
+  print(ggplot(eigens4, aes(unpermuted_fitness, permuted_fitness, color = col, fill=col)) + 
+     geom_point() +
+     scale_color_manual(values = c(&quot;black&quot;,&quot;blue&quot;,&quot;magenta&quot;,&quot;cyan&quot;,&quot;purple&quot;,&quot;red1&quot;), name = NULL, labels = c(&quot;Axenic&quot;,&quot;LAB&quot;,&quot;B. subtilis&quot;,&quot;Gamma&quot;,&quot;5-sp&quot;,&quot;AAB&quot;)) + 
+     scale_fill_manual(values = c(&quot;black&quot;,&quot;blue&quot;,&quot;magenta&quot;,&quot;cyan&quot;,&quot;purple&quot;,&quot;red1&quot;), name = NULL, labels = c(&quot;Axenic&quot;,&quot;LAB&quot;,&quot;B. subtilis&quot;,&quot;Gamma&quot;,&quot;5-sp&quot;,&quot;AAB&quot;)) + 
+     theme_cowplot() +
+     theme(legend.position = &quot;bottom&quot;) +
+     xlab(paste0(&quot;observed fitness&quot;))+
+     ylab(paste0(&quot;survival-permuted fitness&quot;))+
+      annotate(geom=&quot;label&quot;, x= min(eigens4$unpermuted_fitness), y = min(eigens4$permuted_fitness), label = deparse(plotlabel),size=6, parse=T, hjust = 0, fill = NA,label.size=0) + 
+     stat_smooth(method = &quot;lm&quot;, aes(unpermuted_fitness, permuted_fitness), inherit.aes = F)
+     
+)
+
+}</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.timelimit":1000,"exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-figure-s3" class="section level2">
+<h2>Figure S3</h2>
+<div class="tutorial-exercise" data-label="Figure_S3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>p &lt;- list(vec = list(vec_bac = c(&quot;28n&quot;,&quot;30p&quot;,&quot;11c&quot;,&quot;Gno&quot;,&quot;4d&quot;,&quot;35u&quot;,&quot;Ax&quot;,&quot;2b&quot;,&quot;13g&quot;,&quot;15h&quot;,&quot;75o&quot;,&quot;3c&quot;,&quot;1a&quot;,&quot;70j&quot;,&quot;71k&quot;),
+                                vec_atmut = c(&quot;SDR&quot;,&quot;PVEC&quot;,&quot;GDH&quot;,&quot;GNDH&quot;),
+                                vec_ecmut = c(&quot;7636&quot;,&quot;10862&quot;)
+                                ),
+          group = list(&quot;group_bac&quot;,&quot;group_atmut&quot;,&quot;group_ecmut&quot;)
+          )
+
+q = 1
+  xgroup = unlist(p$group[q])
+  subset_vec = unlist(unname(p$vec[q]))
+eigens &lt;- data.frame(vial = factor(), trt = character(), exp = factor(), fitness = numeric(), mod_death = numeric(), permuted_val = character())
+
+  rangevals &lt;- c(1, .5,.1,.05, .01, 0.005,.001,.0005,0.0001,0.00001)
+
+#  rangevals &lt;- c(1,0.00001)
+  
+  ## make up the two comparisons
+
+for (n in list(c(1,1),c(2,7))) {
+  for (m in rangevals) {
+    eigenvalue_df &lt;- data.frame(vial = character(), trt = character(), exp = factor(), fitness = numeric())
+    distance = n
+    mod = m
+    subfitness &lt;- fitness %&gt;% filter(vial %in% subset_vec)
+    for(i in names(table(list(subfitness$trt)))) {
+      
+      ## collect the relevant data for each Leslie matrix 
+      submat &lt;- 
+        # make first row
+        fitness %&gt;%  filter(trt==i) %&gt;% filter(date3 == min(date3)) %&gt;% mutate(date3 = 0) %&gt;% mutate(fecundity = 0) %&gt;% 
+        # the main matrix
+        rbind(fitness %&gt;% filter(trt==i) %&gt;% arrange(date3)) %&gt;%
+        # make last row
+        rbind(fitness %&gt;% filter(trt == i) %&gt;% filter(date3 == max(date3)) %&gt;%  mutate(date3 = max(date3)+1) %&gt;% mutate(fecundity = 0))
+
+      ## set the s and f coloumns to default values
+      submat$s = 1
+      submat$f = 0
+      
+      ## calculate s and f
+      for (j in 1:(dim(submat)[1]-1)) {
+         submat$s[j] &lt;- (submat$cum_female[j+1] / submat$cum_female[j])
+         submat$f[j] &lt;- submat$fecundity[j] #* submat$s[j]
+      }
+
+      ## begin the leslie matrix
+      leslie_mat &lt;- matrix(data = c(unlist(submat$f[1:dim(submat)[1]])), nrow= 1)
+      leslie_mat[(n[1]+1):(n[2]+1)] &lt;- (leslie_mat[(n[1]+1):(n[2]+1)] * mod)
+      
+      ## build in the diagonal
+      for (k in 1:(dim(submat)[1]-1)) {
+        leslie_mat &lt;- rbind(leslie_mat, 
+                            matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+        )
+      }
+
+      ## the matrix
+
+      
+      ## calculate the first eigenvalue in the eigenvector of the Leslie matrix
+      eigenvalue_df &lt;- eigenvalue_df %&gt;% rbind(data.frame(vial = as.character(i), trt = as.character(submat$vial[1]), exp = as.factor(as.character(submat$date2[1])), fitness = as.numeric(eigen(leslie_mat)$values[1])))
+      
+    }
+    
+  ## add that row with the eigenvalue to a growing data frame
+  eigens &lt;- eigens %&gt;% rbind(eigenvalue_df %&gt;% mutate(mod_death = (m), permuted_val = paste0(n[1],&quot;_&quot;,n[2])))
+  }
+}
+
+for(k in names(table(list(eigens$mod_death)))) {
+
+    ## get rid of unnecessary rows  
+    eigensA &lt;- eigens %&gt;% filter(trt%in%subset_vec) %&gt;% filter(permuted_val == &quot;1_1&quot;) %&gt;%droplevels()
+  
+  ## convert trt to a factor
+  eigensA$trt &lt;- factor(eigensA$trt, levels = subset_vec)
+  
+  eigens2a &lt;- eigensA %&gt;% filter(mod_death == 1) %&gt;% rename(unpermuted_fitness = fitness) %&gt;% droplevels()
+  eigens2b &lt;- eigensA %&gt;% filter(mod_death == k) %&gt;% rename(permuted_fitness = fitness) %&gt;% droplevels()
+
+table(eigens2a$vial)
+  eigens3 &lt;- eigens2a %&gt;% inner_join(eigens2b, by=&quot;vial&quot;)
+  eigens3$unpermuted_fitness
+  
+  cortest &lt;- cor.test(eigens3$unpermuted_fitness, eigens3$permuted_fitness, method = &quot;spearman&quot;, exact=F)
+    print(paste0(&quot;Correlation test between observed fitness and when fitness is calculated from &quot;,1/as.numeric(as.character(k)),&quot;-fold reduction in fecundity values. N = &quot;,dim(eigens3 %&gt;% filter(unpermuted_fitness &gt; 0 &amp; permuted_fitness&gt;0))[1]))
+  print(cortest)
+
+  colors &lt;- data.frame(table(list(eigens3$trt.x))) %&gt;% mutate(col = as.factor(c(&quot;red&quot;,&quot;red&quot;,&quot;red&quot;,&quot;black&quot;,&quot;purple&quot;,&quot;red&quot;,&quot;red&quot;,&quot;green&quot;,rep(&quot;blue&quot;,4),&quot;cyan&quot;,rep(&quot;blue&quot;,2))))
+  eigens4 &lt;- eigens3 %&gt;% inner_join(colors, by=c(&quot;trt.x&quot;=&quot;Var1&quot;))
+
+  plotp = round(cortest$p.value,4)
+  plotrho = round(cortest$estimate,4)
+  plotlabel = paste0(&quot;p = &quot;,plotp,&quot;; rho = &quot;,plotrho)
+  ## build the color palette for the plot
+  plot_colors &lt;- eigens4$col
+
+  print(ggplot(eigens4, aes(unpermuted_fitness, permuted_fitness, color = col, fill=col)) + 
+     geom_point() +
+     scale_color_manual(values = c(&quot;black&quot;,&quot;blue&quot;,&quot;magenta&quot;,&quot;cyan&quot;,&quot;purple&quot;,&quot;red1&quot;), name = NULL, labels = c(&quot;Axenic&quot;,&quot;LAB&quot;,&quot;B. subtilis&quot;,&quot;Gamma&quot;,&quot;5-sp&quot;,&quot;AAB&quot;)) + 
+     scale_fill_manual(values = c(&quot;black&quot;,&quot;blue&quot;,&quot;magenta&quot;,&quot;cyan&quot;,&quot;purple&quot;,&quot;red1&quot;), name = NULL, labels = c(&quot;Axenic&quot;,&quot;LAB&quot;,&quot;B. subtilis&quot;,&quot;Gamma&quot;,&quot;5-sp&quot;,&quot;AAB&quot;)) + 
+     theme_cowplot() +
+     theme(legend.position = &quot;bottom&quot;) +
+     xlab(paste0(&quot;observed fitness&quot;))+
+     ylab(paste0(&quot;fecundity-permuted fitness&quot;))+
+      annotate(geom=&quot;label&quot;, x= min(eigens4$unpermuted_fitness), y = min(eigens4$permuted_fitness), label = deparse(plotlabel),size=6, parse=T, hjust = 0, fill = NA,label.size=0) + 
+     stat_smooth(method = &quot;lm&quot;, aes(unpermuted_fitness, permuted_fitness), inherit.aes = F)
+)
+ 
+}</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.timelimit":1000,"exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-figure-s4" class="section level2">
+<h2>Figure S4</h2>
+<div class="tutorial-exercise" data-label="Figure_S4" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>q = 1
+
+#print 1 plot with  the same survival in each line. each line is the age class that was permuted for survival
+xgroup = unlist(p$group[q])
+subset_vec = unlist(unname(p$vec[q]))
+rangevals &lt;- c(1:7)
+
+for (n in c(1,.5,.1,.05,.01,.005,.001,.0001,.00001)) {
+  eigens &lt;- data.frame(vial = factor(), trt = character(), exp = factor(), fitness = numeric(), mod_death = numeric())
+  m = 1
+  for (m in rangevals) {
+    eigenvalue_df &lt;- data.frame(vial = character(), trt = character(), exp = factor(), fitness = numeric())
+    mod = n
+    age_class = m
+    subfitness &lt;- fitness %&gt;% filter(vial %in% subset_vec)
+    for(i in names(table(list(subfitness$trt)))) {
+    submat &lt;- fitness %&gt;% 
+      filter(trt==i) %&gt;% 
+      filter(date3 == min(date3)) %&gt;% 
+      mutate(date3 = 0) %&gt;%
+      mutate(fecundity = 0) %&gt;%
+      rbind(fitness %&gt;% 
+              filter(trt==i) %&gt;% 
+              arrange(date3)
+            ) %&gt;%
+      rbind(fitness %&gt;%
+              filter(trt == i) %&gt;%
+              filter(date3 == max(date3)) %&gt;% 
+              mutate(date3 = max(date3)+1) %&gt;%
+              mutate(fecundity = 0)
+      )
+    submat$s = 1
+    submat$f = 0
+  
+    
+    for (j in 1:(dim(submat)[1]-1)) {
+       submat$s[j] &lt;- (submat$cum_female[j+1] / submat$cum_female[j])
+       submat$f[j] &lt;- submat$fecundity[j] #* submat$s[j]
+    }
+
+    leslie_mat &lt;- matrix(data = c(unlist(submat$f[1:dim(submat)[1]])), nrow= 1)
+    leslie_mat[(m+1)] &lt;- (leslie_mat[(m+1)] * mod)
+    
+    ## build in the diagonal
+    for (k in 1:(dim(submat)[1]-1)) {
+      leslie_mat &lt;- rbind(leslie_mat, 
+                          matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+      )
+    }
+    
+    eigenvalue_df &lt;- eigenvalue_df %&gt;% rbind(data.frame(vial = as.character(i), trt = as.character(submat$vial[1]), exp = as.factor(as.character(submat$date2[1])), fitness = as.numeric(eigen(leslie_mat)$values[1])))
+  
+  }
+    
+    eigens &lt;- eigens %&gt;% rbind(eigenvalue_df %&gt;% mutate(fitness = log(fitness)) %&gt;% mutate(mod_death = (m)))
+  }
+  
+  eigens &lt;- eigens %&gt;% filter(trt%in%subset_vec) %&gt;% droplevels()
+  eigens$trt &lt;- factor(eigens$trt, levels = subset_vec)
+  eigens2 &lt;- eigens %&gt;% group_by(trt, mod_death) %&gt;% summarize(meanfit = mean(fitness))
+  plot_colors &lt;- colorRampPalette(c(&quot;red&quot;, &quot;black&quot;))
+
+  
+   for(i in rangevals) {
+      cat(&#39;\n&#39;)
+      print(&quot;######################################################&quot;)
+      print(paste0(&quot;These are the statistics for age class &quot;,i,&quot; and survival divided by &quot;,1/n, sep = &quot;&quot;))
+      
+      
+      eigen_stats &lt;- eigens %&gt;% filter(mod_death == (i)) %&gt;% droplevels()
+      #print(str(eigen_stats))
+      #print(i)
+      kwoutput &lt;- try(kruskal.test(eigen_stats$fitness~ eigen_stats$trt), silent = T)
+      captured_output &lt;- capture.output(efg &lt;- dunn.test(eigen_stats$fitness,eigen_stats$trt, method = &quot;bh&quot;, table = F, kw = T))
+      if(kwoutput == &quot;Error in kruskal.test.default(numeric(0), structure(integer(0), .Label = character(0), class = \&quot;factor\&quot;)) : \n  all observations are in the same group\n&quot;) {
+        print(paste0(&quot;chi-sq statistic not significant&quot;))
+      } else {
+        print(paste0(&quot;chi-sq statistic: &quot;,round(kwoutput$statistic,2)))
+        print(paste0(&quot;df: &quot;,length(table(eigen_stats$trt))-1))
+        print(paste0(&quot;p: &quot;,signif(kwoutput$p.value,3)))      
+      }      
+      #print(i)
+    if(sum(efg$P.adjusted&lt;0.05)&gt;0) {
+        ghi &lt;- cldList(comparison = efg$comparisons, p.value = efg$P.adjusted, threshold = 0.05, print.comp = F) %&gt;% 
+        arrange(factor(Group, levels = subset_vec))
+        try(assign(x = paste0(&quot;es&quot;,i), value = as.vector(ghi$Letter)),T)
+      } else {
+        assign(x = paste0(&quot;es&quot;,i),value = rep(&quot;a&quot;,length(subset_vec)))
+      }
+      assign(x = paste0(&quot;estats&quot;,i), 
+                   value = eigen_stats %&gt;% 
+                     group_by(trt) %&gt;% 
+                     summarize(mean_fitness = mean(fitness)) %&gt;% 
+                     arrange(factor(trt, levels = subset_vec)) %&gt;%
+                     dplyr::select(mean_fitness) %&gt;%
+                     unlist() %&gt;% 
+                     unname()
+            )
+    } 
+  
+      eigens2$trt &lt;- plyr::revalue(eigens2$trt, c(&quot;28n&quot; = &quot;atrn&quot;,&quot;30p&quot; = &quot;apan&quot;, &quot;11c&quot;=&quot;atrc&quot;,&quot;Gno&quot; = &quot;5sp&quot;,&quot;4d&quot; = &quot;apoc&quot;, &quot;35u&quot; = &quot;aace&quot;,&quot;Ax&quot; = &quot;Ax&quot;,&quot;2b&quot; = &quot;lplc&quot;,&quot;13g&quot; = &quot;bsub&quot;,&quot;15h&quot; = &quot;ecok&quot;,&quot;75o&quot; = &quot;lplw&quot;,&quot;3c&quot; = &quot;lfrc&quot;, &quot;1a&quot; = &quot;lbrc&quot;,&quot;70j&quot; = &quot;lfrk&quot;, &quot;71k&quot; = &quot;lbga&quot;))
+print(n)
+print(m)
+#  jpeg(h=7, w = 15, filename = paste0(&quot;fitness-permute-fecundity-group_&quot;,xgroup,&quot;_&quot;,n,&quot;.jpg&quot;), units = &quot;in&quot;,res = 300)
+  print(ggplot(eigens2, aes(x = trt, y=meanfit,group = as.factor(mod_death), col = as.factor(mod_death), fill = as.factor(mod_death))) + 
+        geom_step(aes(x = trt, y = meanfit)) + #, position = position_dodge(width = widthj), size = sizej) +
+   scale_color_manual(values = plot_colors(length(rangevals)),
+                     name = &quot;Age class&quot;) +
+      coord_cartesian(ylim = c(-2,3)) +
+      ylab(&quot;log fitness&quot;) +
+      xlab(&quot;bacterial treatment&quot;) +
+      theme(legend.position = &quot;bottom&quot;) +
+   guides(color = guide_legend(ncol = 5, byrow=T, reverse = T)) +
+      theme_cowplot() + 
+      theme(legend.position = &quot;bottom&quot;, 
+            legend.text.align = 0,
+            legend.key.width = unit(.5,&quot;in&quot;), 
+            text = element_text(size = 12),
+            axis.text.x = element_text(angle = 90),
+            legend.justification = &quot;center&quot;) + 
+   annotate(geom=&quot;label&quot;, x= c(1.05:(length(subset_vec)+0.05)), y= get(paste0(&quot;estats&quot;,rangevals[7]))+0.03, label = get(paste0(&quot;es&quot;,rangevals[7])),size=3, parse=T, hjust = 0, fill = NA,label.size=0)+
+      annotate(geom=&quot;label&quot;, x= c(1.05:(length(subset_vec)+0.05)), y= get(paste0(&quot;estats&quot;,rangevals[6]))+0.03, label = get(paste0(&quot;es&quot;,rangevals[6])),size=3, parse=T, hjust = 0, fill = NA,label.size=0)+
+      annotate(geom=&quot;label&quot;, x= c(1.05:(length(subset_vec)+0.05)), y= get(paste0(&quot;estats&quot;,rangevals[5]))+0.03, label = get(paste0(&quot;es&quot;,rangevals[5])),size=3, parse=T, hjust = 0, fill = NA,label.size=0)+
+      annotate(geom=&quot;label&quot;, x= c(1.05:(length(subset_vec)+0.05)), y= get(paste0(&quot;estats&quot;,rangevals[4]))+0.03, label = get(paste0(&quot;es&quot;,rangevals[4])),size=3, parse=T, hjust = 0, fill = NA,label.size=0)+
+      annotate(geom=&quot;label&quot;, x= c(1.05:(length(subset_vec)+0.05)), y= get(paste0(&quot;estats&quot;,rangevals[3]))+0.03, label = get(paste0(&quot;es&quot;,rangevals[3])),size=3, parse=T, hjust = 0, fill = NA,label.size=0)+
+      annotate(geom=&quot;label&quot;, x= c(1.05:(length(subset_vec)+0.05)), y= get(paste0(&quot;estats&quot;,rangevals[2]))+0.03, label = get(paste0(&quot;es&quot;,rangevals[2])),size=3, parse=T, hjust = 0, fill = NA,label.size=0)+
+      annotate(geom=&quot;label&quot;, x= c(1.05:(length(subset_vec)+0.05)), y= get(paste0(&quot;estats&quot;,rangevals[1]))+0.03, label = get(paste0(&quot;es&quot;,rangevals[1])),size=3, parse=T, hjust = 0, fill = NA,label.size=0)
+  )
+#    dev.off()
+}</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.timelimit":1000,"exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-figure-s5" class="section level2">
+<h2>Figure S5</h2>
+<div id="section-figure-s5a" class="section level3">
+<h3>Figure S5A</h3>
+<div class="tutorial-exercise" data-label="Figure_S5ac" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>q=2
+xgroup = unlist(p$group[q])
+subset_vec = unlist(unname(p$vec[q]))
+n = c(1,1)
+rangevals &lt;- c(1, .5,.1,.05, .01, 0.005,.001,.0005,0.0001,0.00001)
+eigens &lt;- data.frame(vial = factor(), trt = character(), exp = factor(), fitness = numeric(), mod_death = numeric())
+
+for (m in rangevals) {
+  eigenvalue_df &lt;- data.frame(vial = character(), trt = character(), exp = factor(), fitness = numeric())
+  distance = n
+  mod = m
+  subfitness &lt;- fitness %&gt;% filter(vial %in% subset_vec)
+  for(i in names(table(list(subfitness$trt)))) {
+  submat &lt;- fitness %&gt;% 
+    filter(trt==i) %&gt;% 
+    filter(date3 == min(date3)) %&gt;% 
+    mutate(date3 = 0) %&gt;%
+    mutate(fecundity = 0) %&gt;%
+    rbind(fitness %&gt;% 
+            filter(trt==i) %&gt;% 
+            arrange(date3)
+          ) %&gt;%
+    rbind(fitness %&gt;%
+            filter(trt == i) %&gt;%
+            filter(date3 == max(date3)) %&gt;% 
+            mutate(date3 = max(date3)+1) %&gt;%
+            mutate(fecundity = 0)
+    )
+  submat$s = 1
+  submat$f = 0
+
+  for (j in 1:(dim(submat)[1]-1)) {
+     submat$s[j] &lt;- (submat$cum_female[j+1] / submat$cum_female[j])
+     submat$f[j] &lt;- submat$fecundity[j] #* submat$s[j]
+  }
+  submat
+  leslie_mat &lt;- matrix(data = c(unlist(submat$f[1:dim(submat)[1]])), nrow= 1)
+  if (n[1]&gt;1) {
+    for (k in 1:(n[1]-1)) {
+      leslie_mat &lt;- rbind(leslie_mat,
+                          matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+      )
+    } 
+  }
+  for (k in n[1]:min(n[2],(dim(submat)[1]-1))) {
+    leslie_mat &lt;- rbind(leslie_mat, 
+                        matrix(c(rep(0,k-1),submat$s[k]*mod,rep(0,(dim(submat)[1]-k))), nrow=1)
+    )
+  }
+  if(n[2] &lt; (dim(submat)[1]-1)) {
+    for(k in (n[2]+1):(dim(submat)[1]-1)) {
+       leslie_mat &lt;- rbind(leslie_mat,
+                            matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+        )
+    }
+  }
+  leslie_mat
+  eigenvalue_df &lt;- eigenvalue_df %&gt;% rbind(data.frame(vial = as.character(i), trt = as.character(submat$vial[1]), exp = as.factor(as.character(submat$date2[1])), fitness = as.numeric(eigen(leslie_mat)$values[1])))
+
+}
+  eigens &lt;- eigens %&gt;% rbind(eigenvalue_df %&gt;% mutate(mod_death = (m)))
+}
+  
+eigens &lt;- eigens %&gt;% filter(trt%in%subset_vec) %&gt;% droplevels()
+eigens$trt &lt;- factor(eigens$trt, levels = subset_vec)
+eigens2 &lt;- eigens %&gt;% group_by(trt, mod_death) %&gt;% summarize(meanfit = mean(fitness))
+plot_colors &lt;- colorRampPalette(c(&quot;red&quot;, &quot;black&quot;))
+
+for(i in rangevals) {
+  eigen_stats &lt;- eigens %&gt;% filter(mod_death == (i)) %&gt;% droplevels()
+  print(paste0(&quot;KW test when survival in age class 1 is reduced by a factor of &quot;,1/as.numeric(as.character(i))))
+  print(kruskal.test(eigen_stats$fitness ~ eigen_stats$trt))
+}
+
+print(ggplot(eigens2, aes(x = trt, y=meanfit,group = as.factor(mod_death), col = as.factor(mod_death), fill = as.factor(mod_death))) + 
+        geom_step(aes(x = trt, y = meanfit)) +
+   scale_color_manual(values = plot_colors(length(rangevals)),
+                     name = &quot;survival reduced to&quot;) +
+      ylab(&quot;fitness&quot;) +
+      xlab(&quot;bacterial treatment&quot;) +
+      theme(legend.position = &quot;bottom&quot;) +
+   guides(color = guide_legend(ncol = 5, byrow=T, reverse = T)) +
+      theme_cowplot() + 
+      theme(legend.position = &quot;bottom&quot;, 
+            legend.text.align = 0,
+            legend.key.width = unit(.5,&quot;in&quot;), 
+            text = element_text(size = 12),
+            legend.justification = &quot;center&quot;) 
+)</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.timelimit":1000,"exercise.checker":"NULL"}</script>
+</div>
+</div>
+<div id="section-figure-s5b" class="section level3">
+<h3>Figure S5B</h3>
+<div class="tutorial-exercise" data-label="Figure_S5ec" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>q=3
+  xgroup = unlist(p$group[q])
+  subset_vec = unlist(unname(p$vec[q]))
+  rangevals &lt;- c(1, .5,.1,.05, .01, 0.005,.001,.0005,0.0001,0.00001)
+  n = c(1,1)
+  
+  eigens &lt;- data.frame(vial = factor(), trt = character(), exp = factor(), fitness = numeric(), mod_death = numeric())
+  for (m in rangevals) {
+    eigenvalue_df &lt;- data.frame(vial = character(), trt = character(), exp = factor(), fitness = numeric())
+    distance = n
+    mod = m
+    subfitness &lt;- fitness %&gt;% filter(vial %in% subset_vec)
+    for(i in names(table(list(subfitness$trt)))) {
+    submat &lt;- fitness %&gt;% 
+      filter(trt==i) %&gt;% 
+      filter(date3 == min(date3)) %&gt;% 
+      mutate(date3 = 0) %&gt;%
+      mutate(fecundity = 0) %&gt;%
+      rbind(fitness %&gt;% 
+              filter(trt==i) %&gt;% 
+              arrange(date3)
+            ) %&gt;%
+      rbind(fitness %&gt;%
+              filter(trt == i) %&gt;%
+              filter(date3 == max(date3)) %&gt;% 
+              mutate(date3 = max(date3)+1) %&gt;%
+              mutate(fecundity = 0)
+      )
+    submat$s = 1
+    submat$f = 0
+  
+    for (j in 1:(dim(submat)[1]-1)) {
+       submat$s[j] &lt;- (submat$cum_female[j+1] / submat$cum_female[j])
+       submat$f[j] &lt;- submat$fecundity[j] #* submat$s[j]
+    }
+    submat
+    leslie_mat &lt;- matrix(data = c(unlist(submat$f[1:dim(submat)[1]])), nrow= 1)
+    if (n[1]&gt;1) {
+      for (k in 1:(n[1]-1)) {
+        leslie_mat &lt;- rbind(leslie_mat,
+                            matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+        )
+      } 
+    }
+    for (k in n[1]:min(n[2],(dim(submat)[1]-1))) {
+      leslie_mat &lt;- rbind(leslie_mat, 
+                          matrix(c(rep(0,k-1),submat$s[k]*mod,rep(0,(dim(submat)[1]-k))), nrow=1)
+      )
+    }
+    if(n[2] &lt; (dim(submat)[1]-1)) {
+      for(k in (n[2]+1):(dim(submat)[1]-1)) {
+         leslie_mat &lt;- rbind(leslie_mat,
+                              matrix(c(rep(0,k-1),submat$s[k],rep(0,(dim(submat)[1]-k))), nrow=1)
+          )
+      }
+    }
+    leslie_mat
+    eigenvalue_df &lt;- eigenvalue_df %&gt;% rbind(data.frame(vial = as.character(i), trt = as.character(submat$vial[1]), exp = as.factor(as.character(submat$date2[1])), fitness = as.numeric(eigen(leslie_mat)$values[1])))
+  
+  }
+    eigens &lt;- eigens %&gt;% rbind(eigenvalue_df %&gt;% mutate(mod_death = (m)))
+  }
+  eigens &lt;- eigens %&gt;% filter(trt%in%subset_vec) %&gt;% droplevels()
+  eigens$trt &lt;- factor(eigens$trt, levels = subset_vec)
+  eigens2 &lt;- eigens %&gt;% group_by(trt, mod_death) %&gt;% summarize(meanfit = mean(fitness))
+  plot_colors &lt;- colorRampPalette(c(&quot;red&quot;, &quot;black&quot;))
+  
+  for(i in rangevals) {
+    eigen_stats &lt;- eigens %&gt;% filter(mod_death == (i)) %&gt;% droplevels()
+    efg &lt;- wilcox.test(eigen_stats$fitness ~ eigen_stats$trt)
+    print(paste0(&quot;Wilcoxon test when survival in age class 1 is reduced by a factor of &quot;,1/as.numeric(as.character(i))))
+    print(efg)
+
+  }
+  
+  print(ggplot(eigens2, aes(x = trt, y=meanfit,group = as.factor(mod_death), col = as.factor(mod_death), fill = as.factor(mod_death))) + 
+        geom_step(aes(x = trt, y = meanfit)) + 
+   scale_color_manual(values = plot_colors(length(rangevals)),
+                     name = &quot;survival reduced to&quot;) +
+      ylab(&quot;fitness&quot;) +
+      xlab(&quot;bacterial treatment&quot;) +
+      theme(legend.position = &quot;bottom&quot;) +
+   guides(color = guide_legend(ncol = 5, byrow=T, reverse = T)) +
+      theme_cowplot() + 
+      theme(legend.position = &quot;bottom&quot;, 
+            legend.text.align = 0,
+            legend.key.width = unit(.5,&quot;in&quot;), 
+            text = element_text(size = 12),
+           legend.justification = &quot;center&quot;) 
+  )</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.timelimit":1000,"exercise.checker":"NULL"}</script>
+</div>
+</div>
+</div>
+<div id="section-mgwa" class="section level2">
+<h2>MGWA</h2>
+<div class="tutorial-exercise" data-label="MGWA" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>parsed_data &lt;- FormatAfterOrtho(&quot;https://raw.githubusercontent.com/johnchaston/dros_fit/data/groupsWP_052819.txt&quot;, format=&quot;groups&quot;)
+
+pheno_data &lt;- fitness_formgwa %&gt;% filter(mod_death == 1) %&gt;% filter(trt!=&quot;16i&quot;) %&gt;% inner_join(lookup_code, by = c(&quot;trt&quot;=&quot;code2&quot;)) %&gt;% droplevels() %&gt;% select(-fullname, -code1, -code3)
+
+  ## show the data are normal
+print(&quot;Show the data are normal&quot;)
+shapiro.test(pheno_data$fitness)
+
+  ## Run the MGWA
+print(&quot;Run the MGWA using a linear mixed effects model, with fitness as the response variable, bacterial species as a fixed effect, and experimental replicate as a random effect. Also, uses enough principal coordinates to represent half of the population structure in the data.&quot;)
+
+mcl_matrix_lmer &lt;- AnalyzeOrthoMCL(parsed_data, 
+                         pheno_data, 
+                         model = &#39;lmeR1&#39;, 
+                         species_name = &#39;new_filename&#39;,  
+                         resp = &#39;fitness&#39;,
+                         rndm1 = &quot;exp&quot;,
+                         princ_coord = 0.5)
+QQPlotter(mcl_matrix_lmer)
+
+#joined_matrix_lmer &lt;- JoinRepSeq(parsed_data, &#39;~/Dropbox/Dietary Pref 2019/MGWA/precompliantfasta2/&#39;, mcl_matrix_lmer, fastaformat = &#39;old&#39;)
+#WriteMCL(joined_matrix_lmer,&quot;~/Dropbox/tradeoffs2/Oct2016-monoassociated_fecundity/redo2020/MGWA/wilcox_results_fitness_sep20_lmer_joined.csv&quot;)
+mcl_matrix_lmer</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":false,"error":false,"message":false,"exercise.df_print":"paged","exercise.timelimit":10000,"exercise.checker":"NULL"}</script>
+</div>
+
+<script type="application/shiny-prerendered" data-context="server-start">
+library(learnr)
+#knitr::opts_chunk$set(echo = FALSE)
+
+#library(chron)
+library(readxl)
+#library(reshape2)
+library(ggplot2)
+library(cowplot)
+library(dunn.test)
+library(rcompanion)
+#library(splitstackshape)
+#library(coxme)
+#library(survival)
+library(multcomp)
+library(dplyr)
+library(survminer)
+library(tidyr)
+library(readr)
+library(MAGNAMWAR)
+
+
+g_legend <- function(a.gplot){ 
+	tmp <- ggplot_gtable(ggplot_build(a.gplot)) 
+	leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box") 
+	legend <- tmp$grobs[[leg]] 
+	return(legend)} 
+
+fecundity <- readr::read_csv(file = "https://raw.githubusercontent.com/johnchaston/dros_fit/data/fecundity_markdownout.csv")
+lifespan <- readr::read_csv(file = "https://raw.githubusercontent.com/johnchaston/dros_fit/data/lifespan_markdownout.csv")
+fitness <- readr::read_csv(file = "https://raw.githubusercontent.com/johnchaston/dros_fit/data/fitness_markdownout.csv")
+lookup_code <- readr::read_csv(file = "https://raw.githubusercontent.com/johnchaston/dros_fit/data/lookup_code.csv")
+lifespan_analysis <- readr::read_csv(file = "https://raw.githubusercontent.com/johnchaston/dros_fit/data/lifespananalysis_markdownout.csv")
+fitness_formgwa <- readr::read_csv(file = "https://raw.githubusercontent.com/johnchaston/dros_fit/data/fitnessvalues_markdownout.csv")
+#groups_file <- readr::read_table(file = "https://raw.githubusercontent.com/johnchaston/dros_fit/data/groupsWP_052819.txt")
+
+p <- list(vec = list(vec_bac = c("30p","28n","11c","Ax","Gno","4d","35u","15h","2b","75o","1a","3c","13g","70j","71k","16i"),
+                                vec_atmut = c("SDR","PVEC","GDH","GNDH"),
+                                vec_ecmut = c("7636","10862")
+                                ),
+          group = list("group_bac","group_atmut","group_ecmut"))
+
+total_fitness1 <- fitness %>% 
+  filter(!trt%in%c("Gno-17","1a-14","16i-16","16i-19","16i-12","16i-18","35u-18") & !date3 %in% c(35,36)) %>%
+  group_by(trt,vial) %>%
+  summarize(mean_fec = sum(fecundity)) %>% 
+  filter(vial %in% p$vec$vec_bac)
+
+p <- list(vec = list(vec_bac = c("28n","30p","11c","Gno","4d","35u","Ax","2b","13g","15h","75o","3c","1a","70j","71k","16i"),
+                                vec_atmut = c("SDR","PVEC","GDH","GNDH"),
+                                vec_ecmut = c("7636","10862")
+                                ),
+          group = list("group_bac","group_atmut","group_ecmut")
+          )
+
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+learnr:::register_http_handlers(session, metadata = NULL)
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+session$onSessionEnded(function() {
+        learnr:::session_stop_event(session)
+      })
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_1A-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_1A-code-editor`)), session)
+output$`tutorial-exercise-Figure_1A-output` <- renderUI({
+  `tutorial-exercise-Figure_1A-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_1B-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_1B-code-editor`)), session)
+output$`tutorial-exercise-Figure_1B-output` <- renderUI({
+  `tutorial-exercise-Figure_1B-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_1C-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_1C-code-editor`)), session)
+output$`tutorial-exercise-Figure_1C-output` <- renderUI({
+  `tutorial-exercise-Figure_1C-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_1D-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_1D-code-editor`)), session)
+output$`tutorial-exercise-Figure_1D-output` <- renderUI({
+  `tutorial-exercise-Figure_1D-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_1D_stats-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_1D_stats-code-editor`)), session)
+output$`tutorial-exercise-Figure_1D_stats-output` <- renderUI({
+  `tutorial-exercise-Figure_1D_stats-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Fig1A_legend-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Fig1A_legend-code-editor`)), session)
+output$`tutorial-exercise-Fig1A_legend-output` <- renderUI({
+  `tutorial-exercise-Fig1A_legend-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_2AC-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_2AC-code-editor`)), session)
+output$`tutorial-exercise-Figure_2AC-output` <- renderUI({
+  `tutorial-exercise-Figure_2AC-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_2BD-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_2BD-code-editor`)), session)
+output$`tutorial-exercise-Figure_2BD-output` <- renderUI({
+  `tutorial-exercise-Figure_2BD-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_3A_Acetobacter-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_3A_Acetobacter-code-editor`)), session)
+output$`tutorial-exercise-Figure_3A_Acetobacter-output` <- renderUI({
+  `tutorial-exercise-Figure_3A_Acetobacter-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_3A_ecoli-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_3A_ecoli-code-editor`)), session)
+output$`tutorial-exercise-Figure_3A_ecoli-output` <- renderUI({
+  `tutorial-exercise-Figure_3A_ecoli-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_3B_Acetobacter-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_3B_Acetobacter-code-editor`)), session)
+output$`tutorial-exercise-Figure_3B_Acetobacter-output` <- renderUI({
+  `tutorial-exercise-Figure_3B_Acetobacter-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_3B_ecoli-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_3B_ecoli-code-editor`)), session)
+output$`tutorial-exercise-Figure_3B_ecoli-output` <- renderUI({
+  `tutorial-exercise-Figure_3B_ecoli-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_3C_Acetobacter-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_3C_Acetobacter-code-editor`)), session)
+output$`tutorial-exercise-Figure_3C_Acetobacter-output` <- renderUI({
+  `tutorial-exercise-Figure_3C_Acetobacter-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_3C_ecoli-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_3C_ecoli-code-editor`)), session)
+output$`tutorial-exercise-Figure_3C_ecoli-output` <- renderUI({
+  `tutorial-exercise-Figure_3C_ecoli-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_3D_Acetobacter-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_3D_Acetobacter-code-editor`)), session)
+output$`tutorial-exercise-Figure_3D_Acetobacter-output` <- renderUI({
+  `tutorial-exercise-Figure_3D_Acetobacter-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_3D_ecoli-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_3D_ecoli-code-editor`)), session)
+output$`tutorial-exercise-Figure_3D_ecoli-output` <- renderUI({
+  `tutorial-exercise-Figure_3D_ecoli-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_S1-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_S1-code-editor`)), session)
+output$`tutorial-exercise-Figure_S1-output` <- renderUI({
+  `tutorial-exercise-Figure_S1-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_S2-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_S2-code-editor`)), session)
+output$`tutorial-exercise-Figure_S2-output` <- renderUI({
+  `tutorial-exercise-Figure_S2-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_S3-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_S3-code-editor`)), session)
+output$`tutorial-exercise-Figure_S3-output` <- renderUI({
+  `tutorial-exercise-Figure_S3-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_S4-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_S4-code-editor`)), session)
+output$`tutorial-exercise-Figure_S4-output` <- renderUI({
+  `tutorial-exercise-Figure_S4-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_S5ac-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_S5ac-code-editor`)), session)
+output$`tutorial-exercise-Figure_S5ac-output` <- renderUI({
+  `tutorial-exercise-Figure_S5ac-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-Figure_S5ec-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-Figure_S5ec-code-editor`)), session)
+output$`tutorial-exercise-Figure_S5ec-output` <- renderUI({
+  `tutorial-exercise-Figure_S5ec-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-MGWA-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-MGWA-code-editor`)), session)
+output$`tutorial-exercise-MGWA-output` <- renderUI({
+  `tutorial-exercise-MGWA-result`()
+})
+</script>
+ <!--html_preserve-->
+<script type="application/shiny-prerendered" data-context="dependencies">
+{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootstrap"]},{"type":"character","attributes":{},"value":["3.3.5"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/bootstrap"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["viewport"]}},"value":[{"type":"character","attributes":{},"value":["width=device-width, initial-scale=1"]}]},{"type":"character","attributes":{},"value":["js/bootstrap.min.js","shim/html5shiv.min.js","shim/respond.min.js"]},{"type":"character","attributes":{},"value":["css/cerulean.min.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["pagedtable"]},{"type":"character","attributes":{},"value":["1.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/pagedtable-1.1"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["js/pagedtable.js"]},{"type":"character","attributes":{},"value":["css/pagedtable.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highlightjs"]},{"type":"character","attributes":{},"value":["9.12.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/highlightjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highlight.js"]},{"type":"character","attributes":{},"value":["textmate.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-autocompletion"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-autocompletion.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-diagnostics"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-diagnostics.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-format"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmarkdown/templates/tutorial/resources"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-format.js"]},{"type":"character","attributes":{},"value":["tutorial-format.css","rstudio-theme.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["navigation"]},{"type":"character","attributes":{},"value":["1.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/navigation-1.1"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tabsets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highlightjs"]},{"type":"character","attributes":{},"value":["9.12.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/highlightjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highlight.js"]},{"type":"character","attributes":{},"value":["default.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["font-awesome"]},{"type":"character","attributes":{},"value":["5.1.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/fontawesome"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["css/all.css","css/v4-shims.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootbox"]},{"type":"character","attributes":{},"value":["4.4.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/bootbox"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["bootbox.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["idb-keyvalue"]},{"type":"character","attributes":{},"value":["3.2.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/idb-keyval"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["idb-keyval-iife-compat.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-autocompletion"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-autocompletion.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-diagnostics"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-diagnostics.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]}]}
+</script>
+<!--/html_preserve-->
+<!--html_preserve-->
+<script type="application/shiny-prerendered" data-context="execution_dependencies">
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114]}},"value":[{"type":"character","attributes":{},"value":["abind","ade4","ape","assertthat","backports","base","boot","broom","car","carData","cellranger","codetools","coin","colorspace","compiler","cowplot","crayon","curl","data.table","datasets","DescTools","digest","dplyr","dunn.test","EMT","evaluate","expm","fastmap","forcats","foreach","foreign","generics","ggplot2","ggpubr","ggsignif","glue","graphics","grDevices","grid","gridExtra","gtable","haven","hms","htmltools","htmlwidgets","httpuv","iterators","jsonlite","km.ci","KMsurv","knitr","later","lattice","learnr","libcoin","lifecycle","lmtest","MAGNAMWAR","magrittr","markdown","MASS","Matrix","matrixStats","methods","mime","modeltools","multcomp","multcompView","munsell","mvtnorm","nlme","nortest","openxlsx","parallel","pillar","pkgconfig","plyr","promises","purrr","R6","rcompanion","Rcpp","readr","readxl","rio","rlang","rmarkdown","rprojroot","rstatix","sandwich","scales","seqinr","shiny","splines","stats","stats4","stringi","stringr","survival","survminer","survMisc","TH.data","tibble","tidyr","tidyselect","tools","utils","vctrs","withr","xfun","xtable","yaml","zip","zoo"]},{"type":"character","attributes":{},"value":["1.4-5","1.7-15","5.3","0.2.1","1.1.5","3.6.3","1.3-24","0.5.5","3.0-7","3.0-3","1.1.0","0.2-16","1.3-1","1.4-1","3.6.3","1.0.0","1.3.4","4.3","1.12.8","3.6.3","0.99.34","0.6.25","0.8.5","1.3.5","1.1","0.14","0.999-4","1.0.1","0.5.0","1.4.8","0.8-75","0.0.2","3.3.0","0.3.0","0.6.0","1.3.2","3.6.3","3.6.3","3.6.3","2.3","0.3.0","2.2.0","0.5.3","0.4.0","1.5.1","1.5.2","1.0.12","1.6.1","0.5-2","0.1-5","1.28","1.0.0","0.20-38","0.10.1","1.0-5","0.2.0","0.9-37","2.0.4","1.5","1.1","7.3-51.5","1.2-18","0.57.0","3.6.3","0.9","0.2-23","1.4-12","0.1-8","0.5.0","1.1-0","3.1-144","1.0-4","4.1.4","3.6.3","1.4.3","2.0.3","1.8.6","1.1.0","0.3.3","2.4.1","2.3.25","1.0.5","1.3.1","1.3.1","0.5.16","0.4.5","2.1","1.3-2","0.5.0","2.5-1","1.1.0","3.6-1","1.4.0.2","3.6.3","3.6.3","3.6.3","1.4.6","1.4.0","3.1-11","0.4.6","0.5.5","1.0-10","2.1.3","1.0.2","1.0.0","3.6.3","3.6.3","0.2.4","2.1.2","0.12","1.8-4","2.2.1","2.0.4","1.8-7"]}]}]}
+</script>
+<!--/html_preserve-->
+</div>
+
+</div> <!-- topics -->
+
+<div class="topicsContainer">
+<div class="topicsPositioner">
+<div class="band">
+<div class="bandContent topicsListContainer">
+
+<!-- begin doc-metadata -->
+<div id="doc-metadata">
+<h2 class="title toc-ignore" style="display:none;">Drosophila fitness</h2>
+</div>
+<!-- end doc-metadata -->
+
+</div> <!-- bandContent.topicsListContainer -->
+</div> <!-- band -->
+</div> <!-- topicsPositioner -->
+</div> <!-- topicsContainer -->
+
+
+</div> <!-- bandContent page -->
+</div> <!-- pageContent band -->
+
+
+
+
+<script>
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+</script>
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+
+</body>
+
+</html>
